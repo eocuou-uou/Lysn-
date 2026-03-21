@@ -448,7 +448,6 @@
         }
 
         .btn-pull:active { background: #e0e0e0; }
-        .btn-pull:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .chat-room {
             position: absolute;
@@ -1177,7 +1176,6 @@
 </div>
 
 <script>
-    // 带有超时的 fetch 封装，防止请求无限挂起
     const fetchWithTimeout = async (resource, options = {}) => {
         const { timeout = 30000 } = options;
         const controller = new AbortController();
@@ -1190,7 +1188,6 @@
         return response;
     };
 
-    // 数据库封装，带降级保护
     const DB = {
         db: null,
         isSupported: true,
@@ -1221,7 +1218,7 @@
             });
         },
         get(key) {
-            if (!this.isSupported) {
+            if (!this.isSupported || !this.db) {
                 return Promise.resolve(JSON.parse(localStorage.getItem('bubble_' + key)));
             }
             return new Promise((resolve, reject) => {
@@ -1236,7 +1233,7 @@
             });
         },
         set(key, value) {
-            if (!this.isSupported) {
+            if (!this.isSupported || !this.db) {
                 try {
                     localStorage.setItem('bubble_' + key, JSON.stringify(value));
                 } catch (e) {}
@@ -1302,7 +1299,7 @@
             
             if (!response.ok) throw new Error("API 请求失败");
             const data = await response.json();
-            return data.choices[0].message.content.trim();
+            return data.choices?.[0]?.message?.content?.trim() || "翻译失败(格式异常)";
         } catch (error) {
             console.error("翻译请求出错:", error);
             if (error.name === 'AbortError') return "翻译超时";
@@ -1380,7 +1377,7 @@
         try {
             await DB.set('userData', userData);
         } catch (e) {
-            console.error('存储失败', e);
+            console.error('IndexedDB 存储失败', e);
         }
         updateAllUI();
     }
@@ -1484,6 +1481,7 @@
 
     async function handleBgUpload(event) {
         const file = event.target.files[0];
+        event.target.value = '';
         if (!file) return;
         try {
             const compressed = await compressImage(file, 1080, 1920, 0.8);
@@ -1494,22 +1492,31 @@
         } catch (e) {
             alert("背景设置失败");
         }
-        event.target.value = '';
     }
 
     async function handleFontUpload(event) {
         const file = event.target.files[0];
+        event.target.value = '';
         if (!file) return;
         
-        userData.customFont = file;
-        try {
-            await saveUserData();
-            applyChatSettings();
-            closeChatSettings();
-        } catch (err) {
-            alert("保存字体失败。");
+        if (file.size > 10 * 1024 * 1024) { 
+            alert("字体文件过大，请选择 10MB 以下的字体文件！");
+            return;
         }
-        event.target.value = '';
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            userData.customFont = e.target.result; 
+            try {
+                await saveUserData();
+                applyChatSettings();
+                closeChatSettings();
+            } catch (err) {
+                alert("保存字体失败，可能是超出了存储限制。");
+                applyCustomFont(userData.customFont); 
+            }
+        };
+        reader.readAsDataURL(file);
     }
 
     async function resetChatSettings() {
@@ -1534,14 +1541,11 @@
 
     function applyCustomFont(fontData) {
         const styleTag = document.getElementById('dynamic-font');
-        if (fontData) {
-            const url = (fontData instanceof Blob || fontData instanceof File) 
-                        ? URL.createObjectURL(fontData) 
-                        : fontData;
+        if (fontData && typeof fontData === 'string' && fontData.startsWith('data:')) {
             styleTag.innerHTML = `
                 @font-face {
                     font-family: 'BubbleCustomFont';
-                    src: url('${url}');
+                    src: url('${fontData}');
                 }
                 * {
                     font-family: 'BubbleCustomFont', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
@@ -1633,6 +1637,7 @@
 
     function handleMediaSelect(event) {
         const file = event.target.files[0];
+        event.target.value = ''; 
         if (!file) return;
 
         const isVideo = file.type.startsWith('video/');
@@ -1651,7 +1656,6 @@
             };
             reader.readAsDataURL(file);
         }
-        event.target.value = ''; 
     }
 
     async function saveFirstMessage() {
@@ -1687,7 +1691,8 @@
             id: Date.now().toString(), 
             type: 'sent', 
             text: text, 
-            time: new Date().toISOString()
+            time: new Date().toISOString(),
+            hasGeneratedReplies: false 
         };
 
         if (pendingMedia) {
@@ -1713,7 +1718,7 @@
         let recentSentMsgs = [];
         for (let i = userData.messages.length - 1; i >= 0; i--) {
             if (userData.messages[i].type === 'folded') break;
-            if (userData.messages[i].type === 'sent') {
+            if (userData.messages[i].type === 'sent' && !userData.messages[i].hasGeneratedReplies) {
                 recentSentMsgs.unshift(userData.messages[i]);
             }
         }
@@ -1725,6 +1730,7 @@
         let hasSticker = false;
 
         recentSentMsgs.forEach((m, idx) => {
+            m.hasGeneratedReplies = true; 
             if (m.text) combinedText += `内容${idx+1}: “${m.text}”；`;
             if (m.hiddenDesc) combinedDesc += `图片/视频${idx+1}: [${m.hiddenDesc}]；`;
             if (m.stickerUrl) hasSticker = true;
@@ -1824,7 +1830,7 @@
         });
 
         const lastMsg = userData.messages[userData.messages.length - 1];
-        if (lastMsg && lastMsg.type === 'sent') {
+        if (lastMsg && lastMsg.type === 'sent' && !lastMsg.hasGeneratedReplies) {
             const triggerBtn = document.createElement('div');
             triggerBtn.className = 'batch-generate-btn';
             triggerBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg> 接收粉丝回复';
@@ -1899,7 +1905,8 @@
             }
             
             const data = await response.json();
-            const content = data.choices[0].message.content.trim();
+            const content = data.choices?.[0]?.message?.content?.trim();
+            if (!content) throw new Error("API 返回格式异常或为空");
             
             let repliesArray = [];
             
@@ -1908,14 +1915,9 @@
                 repliesArray = JSON.parse(match ? match[0] : content);
             } catch (e) {
                 console.warn("JSON解析彻底失败，启动终极正则强制提取机制...");
-                const fallbackMatch = content.match(/(["'])(?:(?=(\\?))\2.)*?\1/g);
-                if (fallbackMatch && fallbackMatch.length >= 5) {
-                    repliesArray = fallbackMatch.map(s => s.replace(/(^["']|["']$)/g, '').trim()).filter(s => s.length > 0);
-                } else {
-                    repliesArray = content.split('\n')
-                        .map(line => line.replace(/^[-*0-9.\s]+/, '').trim()) 
-                        .filter(line => line.length > 2 && !line.includes('```') && !line.includes('['));
-                }
+                repliesArray = content.split('\n')
+                    .map(line => line.replace(/^[-*0-9.\s]+/, '').replace(/(^["']|["']$)/g, '').trim()) 
+                    .filter(line => line.length > 1 && !line.includes('```') && !line.includes('[') && !line.includes('{'));
             }
 
             if (!Array.isArray(repliesArray) || repliesArray.length === 0) {
