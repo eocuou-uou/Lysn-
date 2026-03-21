@@ -935,7 +935,7 @@
         </div>
 
         <div id="tab-chats" class="tab-content">
-            <div class="section-title">最近的聊天室</div>
+            <div class="section-title">最近의聊天室</div>
             <div class="list-item" onclick="openChat()" style="cursor: pointer;">
                 <img src="" class="avatar global-avatar" alt="头像">
                 <div class="item-info">
@@ -1098,6 +1098,7 @@
         </div>
     </div>
 
+    <!-- ================= 新增：聊天房专属设置面板 (含清空聊天记录) ================= -->
     <div id="chat-settings-panel" class="sticker-panel">
         <div class="sticker-panel-header">
             <div class="sticker-panel-close" onclick="closeChatSettings()">
@@ -1114,7 +1115,10 @@
                 <span class="menu-text">글꼴 설정 (设置字体)</span>
             </div>
             <div class="menu-item" style="padding: 15px 20px;" onclick="resetChatSettings()">
-                <span class="menu-text" style="color: #ff4d4f;">기본값으로 초기화 (恢复默认)</span>
+                <span class="menu-text">기본값으로 초기화 (恢复默认)</span>
+            </div>
+            <div class="menu-item" style="padding: 15px 20px;" onclick="clearChatHistory()">
+                <span class="menu-text" style="color: #ff4d4f;">대화 내용 지우기 (清空聊天记录)</span>
             </div>
         </div>
     </div>
@@ -1525,6 +1529,16 @@
         await saveUserData();
         applyChatSettings();
         closeChatSettings();
+    }
+
+    // --- ================= 新增：清空聊天记录 ================= ---
+    async function clearChatHistory() {
+        if (confirm("정말 대화 내용을 지우시겠습니까?\n(真的要清空聊天记录吗？)")) {
+            userData.messages = [];
+            await saveUserData();
+            renderMessages();
+            closeChatSettings();
+        }
     }
 
     function applyChatSettings() {
