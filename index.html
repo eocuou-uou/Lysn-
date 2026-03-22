@@ -448,6 +448,7 @@
         }
 
         .btn-pull:active { background: #e0e0e0; }
+        .btn-pull:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .chat-room {
             position: absolute;
@@ -491,6 +492,26 @@
             display: flex;
             justify-content: flex-end;
             width: 100%;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .retract-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s, background-color 0.2s;
+            margin-bottom: 4px;
+        }
+        .retract-btn:active {
+            opacity: 1;
+            background-color: #e0e0e0;
         }
 
         .message-right {
@@ -852,11 +873,10 @@
             font-weight: 700;
             color: #333;
         }
-        .sticker-panel-close, .sticker-panel-add {
-            cursor: pointer;
+        .sticker-panel-actions {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 15px;
         }
         .sticker-grid {
             flex: 1;
@@ -878,11 +898,32 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: all 0.2s;
         }
         .sticker-item img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; 
+        }
+        .sticker-item.selected {
+            border: 2px solid #9F85F1;
+            position: relative;
+        }
+        .sticker-item.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #9F85F1;
+            color: #fff;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
         }
         .sticker-empty {
             grid-column: 1 / -1;
@@ -935,7 +976,7 @@
         </div>
 
         <div id="tab-chats" class="tab-content">
-            <div class="section-title">最近의聊天室</div>
+            <div class="section-title">最近的聊天室</div>
             <div class="list-item" onclick="openChat()" style="cursor: pointer;">
                 <img src="" class="avatar global-avatar" alt="头像">
                 <div class="item-info">
@@ -1079,7 +1120,7 @@
 
             <div class="chat-input-wrapper">
                 <input type="text" id="chat-input" placeholder="팬들의 닉네임 @@@를 불러 주세요 :)" oninput="checkInputState()" onkeydown="if(event.key === 'Enter' && !event.isComposing) { event.preventDefault(); sendChatMessage(); }">
-                <div class="smiley-btn" onclick="addSticker()">
+                <div class="smiley-btn" onclick="openStickerPanel()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
                         <circle cx="12" cy="12" r="10"></circle>
                         <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
@@ -1098,7 +1139,6 @@
         </div>
     </div>
 
-    <!-- ================= 新增：聊天房专属设置面板 (含清空聊天记录) ================= -->
     <div id="chat-settings-panel" class="sticker-panel">
         <div class="sticker-panel-header">
             <div class="sticker-panel-close" onclick="closeChatSettings()">
@@ -1127,14 +1167,24 @@
     <input type="file" id="font-upload" accept=".ttf,.otf,.woff,.woff2" style="display:none;" onchange="handleFontUpload(event)">
 
     <div id="sticker-panel" class="sticker-panel">
-        <div class="sticker-panel-header">
+        <div class="sticker-panel-header" id="sticker-header-normal">
             <div class="sticker-panel-close" onclick="closeStickerPanel()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </div>
             <div class="sticker-panel-title">Stickers</div>
-            <div class="sticker-panel-add" onclick="openAddStickerModal()">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9F85F1" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <div class="sticker-panel-actions">
+                <div onclick="toggleStickerDeleteMode()" style="cursor:pointer; display:flex; align-items:center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </div>
+                <div onclick="openAddStickerModal()" style="cursor:pointer; display:flex; align-items:center;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9F85F1" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
             </div>
+        </div>
+        <div class="sticker-panel-header" id="sticker-header-delete" style="display:none;">
+            <div onclick="toggleStickerDeleteMode()" style="cursor:pointer; font-size:15px; color:#666; font-weight:bold;">취소 (取消)</div>
+            <div class="sticker-panel-title">이모티콘 선택</div>
+            <div onclick="deleteSelectedStickers()" style="cursor:pointer; font-size:15px; color:#ff4d4f; font-weight:bold;">삭제 (<span id="delete-count">0</span>)</div>
         </div>
         <div class="sticker-grid" id="sticker-grid"></div>
     </div>
@@ -1270,6 +1320,8 @@
 
     let pendingMedia = null; 
     let pendingSticker = null; 
+    let isStickerDeleteMode = false;
+    let selectedStickersToDelete = new Set();
 
     async function translateText(text) {
         const url = userData.api.url;
@@ -1314,7 +1366,27 @@
     const emojiSets = [
         ['😇','😇','😚','😚','😌'], ['🥰','🥰','🥲','🤣','😂'], ['🌸','🌺','🥀','🪴','🍄'],
         ['🦄','🌈','🦄','🦄','🦄'], ['❤️','❤️','❤️','❤️','❤️'], ['🐶','🐱','🐭','🐹','🐰'],
-        ['✨','✨','🥺','🥺','💕'], ['🔥','🔥','👏','👏','🙌']
+        ['✨','✨','🥺','🥺','💕'], ['🔥','🔥','👏','👏','🙌'], ['😭','😭','😭','💔','💔'],
+        ['🫶','🫶','💖','💖','✨'], ['🐻','🐻‍❄️','🐼','🐨','🐾'], ['🍓','🍒','🍎','🍉','🍑'],
+        ['🎀','🎀','🩰','🪞','🤍'], ['🥹','🥹','🥺','🥺','💘'], ['👑','👑','💎','💎','✨'],
+        ['🌙','⭐️','🌟','💫','🪐'], ['🦋','🦋','💙','💙','🫧'], ['🍀','🍀','💚','💚','🌿'],
+        ['🐥','🐥','🐣','🐤','💛'], ['🐯','🦁','🐱','🐾','🧡'], ['🐰','🐰','🥕','🥕','🤍'],
+        ['🐺','🐺','🖤','🖤','🐾'], ['🐧','🐧','🧊','🧊','💙'], ['🐬','🐬','🌊','🌊','🤍'],
+        ['🦊','🦊','🧡','🧡','🍂'], ['🎉','🎉','🎊','🥳','🍾'], ['🎤','🎧','🎶','🎵','🎸'],
+        ['🥺','😭','🙇‍♀️','🙇‍♀️','🙇‍♀️'], ['👀','👀','🫣','🫣','🫣'], ['🫠','🫠','🫠','🫠','🫠'],
+        ['🍒','🍒','🍒','🍒','🍒'], ['🍉','🍉','🍉','🍉','🍉'], ['🥑','🥑','🥑','🥑','🥑'],
+        ['💖','💘','💝','💞','💓'], ['⭐','🌟','✨','💫','☄️'], ['🔥','💥','🧨','🎇','🎆']
+    ];
+
+    const avatarEmojis = [
+        '😘','😂','😍','😎','🥺','🥳','🥰','🤩','😇','🤭','😭','🥹','🫠','🫣','🫶','🫡','🤔','🤫','🤤','😝',
+        '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐧','🐦','🐤','🐥',
+        '🦆','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🐠','🐟',
+        '🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄',
+        '🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🐈','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨',
+        '🦡','🦫','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🌵','🎄','🌲','🌳','🌴','🪵','🌱','🌿','☘',
+        '🍀','🎍','🪴','🎋','🍃','🍂','🍁','🍄','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🍎','🍓','🍒',
+        '🍉','🍑','🍊','🥭','🍍','🍌','🍋','🍈','🍏','🍐','🥝','🫐','🍇','🥥','🍅','🥑','🎀','🧸','🎈','🔮'
     ];
 
     setInterval(() => {
@@ -1435,6 +1507,8 @@
             }
         }
 
+        userData.stickers = userData.stickers || [];
+
         const nameInput = document.getElementById('more-name-input');
         if (nameInput) nameInput.value = userData.name;
         const statusInput = document.getElementById('status-text');
@@ -1531,7 +1605,6 @@
         closeChatSettings();
     }
 
-    // --- ================= 新增：清空聊天记录 ================= ---
     async function clearChatHistory() {
         if (confirm("정말 대화 내용을 지우시겠습니까?\n(真的要清空聊天记录吗？)")) {
             userData.messages = [];
@@ -1580,13 +1653,68 @@
         }
     }
 
-    function addSticker() {
+    function openStickerPanel() {
+        isStickerDeleteMode = false;
+        selectedStickersToDelete.clear();
+        updateStickerHeaderUI();
         renderStickerGrid();
         document.getElementById('sticker-panel').classList.add('show');
     }
 
     function closeStickerPanel() {
         document.getElementById('sticker-panel').classList.remove('show');
+        isStickerDeleteMode = false; 
+    }
+
+    function toggleStickerDeleteMode() {
+        isStickerDeleteMode = !isStickerDeleteMode;
+        selectedStickersToDelete.clear();
+        updateStickerHeaderUI();
+        renderStickerGrid();
+    }
+
+    function updateStickerHeaderUI() {
+        if (isStickerDeleteMode) {
+            document.getElementById('sticker-header-normal').style.display = 'none';
+            document.getElementById('sticker-header-delete').style.display = 'flex';
+            document.getElementById('delete-count').innerText = '0';
+        } else {
+            document.getElementById('sticker-header-normal').style.display = 'flex';
+            document.getElementById('sticker-header-delete').style.display = 'none';
+        }
+    }
+
+    function handleStickerClick(url) {
+        if (isStickerDeleteMode) {
+            if (selectedStickersToDelete.has(url)) {
+                selectedStickersToDelete.delete(url);
+            } else {
+                selectedStickersToDelete.add(url);
+            }
+            document.getElementById('delete-count').innerText = selectedStickersToDelete.size;
+            renderStickerGrid(); 
+        } else {
+            pendingSticker = url;
+            document.getElementById('chat-input').placeholder = "[已选表情包] " + document.getElementById('chat-input').placeholder.replace(/\[已选表情包\] /g, '');
+            checkInputState();
+            closeStickerPanel();
+        }
+    }
+
+    async function deleteSelectedStickers() {
+        if (selectedStickersToDelete.size === 0) return;
+        if (confirm(`삭제하시겠습니까? (确定要删除选中的 ${selectedStickersToDelete.size} 个表情包吗？)`)) {
+            userData.stickers = userData.stickers.filter(url => !selectedStickersToDelete.has(url));
+            
+            if (pendingSticker && selectedStickersToDelete.has(pendingSticker)) {
+                pendingSticker = null;
+                document.getElementById('chat-input').placeholder = "팬들의 닉네임 @@@를 불러 주세요 :)";
+                checkInputState();
+            }
+
+            await saveUserData();
+            toggleStickerDeleteMode(); 
+        }
     }
 
     function renderStickerGrid() {
@@ -1601,20 +1729,16 @@
         userData.stickers.forEach(url => {
             const item = document.createElement('div');
             item.className = 'sticker-item';
-            item.onclick = () => selectSticker(url);
+            if (isStickerDeleteMode && selectedStickersToDelete.has(url)) {
+                item.classList.add('selected');
+            }
+            item.onclick = () => handleStickerClick(url);
             
             const img = document.createElement('img');
             img.src = url;
             item.appendChild(img);
             grid.appendChild(item);
         });
-    }
-
-    function selectSticker(url) {
-        pendingSticker = url;
-        document.getElementById('chat-input').placeholder = "[已选表情包] " + document.getElementById('chat-input').placeholder.replace(/\[已选表情包\] /g, '');
-        checkInputState();
-        closeStickerPanel();
     }
 
     function openAddStickerModal() {
@@ -1634,7 +1758,7 @@
         lines.forEach(line => {
             const url = line.trim();
             if (url && url.startsWith('http')) {
-                if (!userData.stickers) userData.stickers = [];
+                userData.stickers = userData.stickers || [];
                 if (!userData.stickers.includes(url)) {
                     userData.stickers.push(url);
                     added = true;
@@ -1728,7 +1852,18 @@
         renderMessages();
     }
 
+    async function retractMessage(msgId) {
+        if (confirm("메시지를 삭제하시겠습니까?\n(确认要撤回这条消息吗？)")) {
+            userData.messages = userData.messages.filter(m => m.id !== msgId);
+            await saveUserData();
+            renderMessages();
+        }
+    }
+
     async function generateFoldedBubbles() {
+        const btn = document.querySelector('.batch-generate-btn');
+        if (btn) btn.style.display = 'none';
+
         let recentSentMsgs = [];
         for (let i = userData.messages.length - 1; i >= 0; i--) {
             if (userData.messages[i].type === 'folded') break;
@@ -1773,11 +1908,21 @@
         container.innerHTML = '';
         if (!userData.messages) return;
         
+        let hasUnrepliedSentMsg = false;
+
         userData.messages.forEach(msg => {
             if (msg.type === 'sent') {
+                if (!msg.hasGeneratedReplies) hasUnrepliedSentMsg = true;
+
                 const wrapper = document.createElement('div');
                 wrapper.className = 'message-wrapper';
                 
+                const retractBtn = document.createElement('div');
+                retractBtn.className = 'retract-btn';
+                retractBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>';
+                retractBtn.onclick = () => retractMessage(msg.id);
+                wrapper.appendChild(retractBtn);
+
                 const bubble = document.createElement('div');
                 bubble.className = 'message-right';
                 
@@ -1820,7 +1965,7 @@
                 const row = document.createElement('div');
                 row.className = 'fan-folded-row';
 
-                const avatarEmoji = ['😘','😂','😍','😎','🥺','🥳'][Math.floor(Math.random()*6)];
+                const avatarEmoji = avatarEmojis[Math.floor(Math.random() * avatarEmojis.length)];
                 const avatar = document.createElement('div');
                 avatar.className = 'fan-avatar-emoji';
                 avatar.innerText = avatarEmoji;
@@ -1843,8 +1988,7 @@
             }
         });
 
-        const lastMsg = userData.messages[userData.messages.length - 1];
-        if (lastMsg && lastMsg.type === 'sent' && !lastMsg.hasGeneratedReplies) {
+        if (hasUnrepliedSentMsg) {
             const triggerBtn = document.createElement('div');
             triggerBtn.className = 'batch-generate-btn';
             triggerBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg> 接收粉丝回复';
@@ -1969,8 +2113,6 @@
         const container = document.getElementById('replies-content');
         container.innerHTML = '';
         
-        const avatarEmojis = ['😘','😂','😍','😎','🥺','🥳','🥰','🤩','😇','🤭'];
-
         replies.forEach((text, index) => {
             const randomId = 'fan_' + Math.random().toString(36).substr(2, 4);
             const randomAvatar = avatarEmojis[Math.floor(Math.random() * avatarEmojis.length)];
