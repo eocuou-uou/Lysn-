@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- ================= 强制全屏与沉浸式配置 ================= -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
@@ -28,7 +27,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 核心修复：彻底锁死底层，防止 Safari 滑动拉出地址栏 */
         html, body {
             width: 100%;
             height: 100%;
@@ -53,21 +51,46 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
-        /* ================= 核心修复：统一的 Header 样式 (完美适配状态栏与刘海屏) ================= */
-        .header, .replies-header {
+        @media (display-mode: standalone) {
+            .header, .sub-page .header, .chat-room .header, .replies-header {
+                padding-top: calc(env(safe-area-inset-top) + 10px) !important;
+                height: auto !important;
+                min-height: calc(55px + env(safe-area-inset-top));
+            }
+            .bottom-nav {
+                padding-bottom: env(safe-area-inset-bottom) !important;
+                height: calc(75px + env(safe-area-inset-bottom)) !important;
+            }
+            .content {
+                padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+            }
+        }
+
+        .splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff url('https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg') no-repeat center center;
+            background-size: cover;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        .splash-screen.hide { opacity: 0; }
+        .splash-screen.removed { display: none; }
+
+        .header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end; /* 强制底部对齐，防止文字顶入状态栏 */
-            padding: 0 20px 12px 20px;
+            align-items: flex-end;
+            padding: 15px 20px 10px;
+            height: 60px;
             background-color: #fff;
             z-index: 20;
-            /* 动态安全区适配：如果没有刘海则默认20px，有刘海则取刘海高度 */
-            padding-top: max(20px, env(safe-area-inset-top));
-            height: calc(48px + max(20px, env(safe-area-inset-top)));
-        }
-        
-        .sub-page .header, .chat-room .header, .replies-header {
-            border-bottom: 1px solid #f5f5f5;
         }
 
         .header-title {
@@ -75,25 +98,13 @@
             font-weight: 900;
             letter-spacing: -0.5px;
             color: #000;
-            margin-bottom: -2px;
-        }
-
-        .sub-page .header-title, .chat-room .header-title {
-            font-size: 17px;
-            margin-bottom: 2px;
-        }
-
-        .replies-header-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 2px;
         }
 
         .header-icons {
             display: flex;
             gap: 16px;
+            margin-bottom: 4px;
             align-items: center;
-            margin-bottom: 2px;
         }
 
         .header-icons svg {
@@ -104,14 +115,12 @@
             stroke-width: 1.5;
             fill: none;
         }
-        /* ========================================================================================= */
 
         .content {
             flex: 1;
             overflow-y: auto;
             padding: 0 20px;
-            /* 底部安全区适配 */
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            padding-bottom: 90px;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -286,6 +295,7 @@
             position: absolute;
             bottom: 0;
             width: 100%;
+            height: 75px;
             background-color: #ffffff;
             border-top: 1px solid #f0f0f0;
             display: flex;
@@ -294,9 +304,6 @@
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -2px 15px rgba(0,0,0,0.03);
             z-index: 10;
-            /* 底部安全区适配 */
-            padding-bottom: env(safe-area-inset-bottom);
-            height: calc(65px + env(safe-area-inset-bottom));
         }
 
         .nav-item {
@@ -356,6 +363,19 @@
         }
 
         .sub-page.show { transform: translateX(0); }
+
+        .sub-page .header {
+            border-bottom: 1px solid #f5f5f5;
+            height: 55px;
+            padding: 0 20px;
+            align-items: center;
+        }
+
+        .sub-page .header-title {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
 
         .save-btn {
             font-size: 15px;
@@ -475,6 +495,16 @@
         
         .chat-room.show { transform: translateX(0); }
 
+        .chat-room .header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            height: 55px;
+            padding: 0 20px;
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+        }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -509,6 +539,14 @@
         .retract-btn:active {
             opacity: 1;
             background-color: #e0e0e0;
+        }
+
+        .msg-time {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+            margin-right: 2px;
+            flex-shrink: 0;
         }
 
         .quote-bubble {
@@ -575,7 +613,6 @@
         .chat-input-area {
             background-color: #fff;
             padding: 10px 15px;
-            /* 底部安全区适配 */
             padding-bottom: max(10px, env(safe-area-inset-bottom));
             display: flex;
             align-items: center;
@@ -638,20 +675,6 @@
         }
 
         .send-btn.active { background-color: var(--theme-color); }
-
-        .splash-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #fff url('https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg') no-repeat center center;
-            background-size: cover;
-            z-index: 1000;
-            opacity: 1;
-            transition: opacity 0.6s ease-out;
-            pointer-events: none;
-        }
 
         .modal-overlay {
             position: absolute;
@@ -807,7 +830,16 @@
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .replies-page.show { transform: translateX(0); }
-
+        .replies-header {
+            height: 55px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .replies-header-title { font-size: 16px; font-weight: bold; }
         .replies-content {
             flex: 1;
             overflow-y: auto;
@@ -815,7 +847,7 @@
             -webkit-overflow-scrolling: touch;
         }
         .replies-footer {
-            height: calc(50px + env(safe-area-inset-bottom));
+            height: 60px;
             background: var(--theme-color);
             display: flex;
             justify-content: center;
@@ -1332,7 +1364,11 @@
         set(key, value) {
             if (!this.isSupported || !this.db) {
                 try {
-                    localStorage.setItem('bubble_' + key, JSON.stringify(value));
+                    let valToStore = { ...value };
+                    if (valToStore.customFont instanceof File || valToStore.customFont instanceof Blob) {
+                        valToStore.customFont = null; 
+                    }
+                    localStorage.setItem('bubble_' + key, JSON.stringify(valToStore));
                 } catch (e) {
                     if (e.name === 'QuotaExceededError') {
                         alert("浏览器存储空间不足！如果您刚刚设置了超大字体，请尝试恢复默认或清理空间。");
@@ -1371,6 +1407,7 @@
     let pendingQuote = null; 
     let isStickerDeleteMode = false;
     let selectedStickersToDelete = new Set();
+    let currentFontUrl = null; 
 
     function showLoading(text) {
         document.getElementById('loading-text').innerText = text;
@@ -1694,21 +1731,17 @@
         
         showLoading("正在加载字体，请稍候...");
 
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            userData.customFont = e.target.result; 
-            try {
-                await saveUserData();
-                applyChatSettings();
-                closeChatSettings();
-            } catch (err) {
-                alert("保存字体失败，可能是超出了浏览器存储限制。");
-                applyCustomFont(userData.customFont); 
-            } finally {
-                hideLoading();
-            }
-        };
-        reader.readAsDataURL(file);
+        userData.customFont = file; 
+        try {
+            await saveUserData();
+            applyChatSettings();
+            closeChatSettings();
+        } catch (err) {
+            alert("保存字体失败，可能是超出了浏览器存储限制。");
+            applyCustomFont(userData.customFont); 
+        } finally {
+            hideLoading();
+        }
     }
 
     async function resetChatSettings() {
@@ -1748,18 +1781,31 @@
 
     function applyCustomFont(fontData) {
         const styleTag = document.getElementById('dynamic-font');
-        if (fontData && typeof fontData === 'string' && fontData.startsWith('data:')) {
+        if (!fontData) {
+            styleTag.innerHTML = '';
+            if (currentFontUrl) { URL.revokeObjectURL(currentFontUrl); currentFontUrl = null; }
+            return;
+        }
+
+        let url = '';
+        if (typeof fontData === 'string') {
+            url = fontData;
+        } else if (fontData instanceof Blob || fontData instanceof File) {
+            if (currentFontUrl) URL.revokeObjectURL(currentFontUrl);
+            currentFontUrl = URL.createObjectURL(fontData);
+            url = currentFontUrl;
+        }
+
+        if (url) {
             styleTag.innerHTML = `
                 @font-face {
                     font-family: 'BubbleCustomFont';
-                    src: url('${fontData}');
+                    src: url('${url}');
                 }
                 * {
                     font-family: 'BubbleCustomFont', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
                 }
             `;
-        } else {
-            styleTag.innerHTML = '';
         }
     }
 
@@ -2041,6 +2087,7 @@
                 baseText: combinedText,
                 hiddenDesc: combinedDesc,
                 hasSticker: hasSticker,
+                time: new Date().toISOString(), // 记录折叠气泡的时间，用于15分钟判定
                 replies: [] 
             });
         }
@@ -2062,12 +2109,21 @@
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'message-wrapper';
+                wrapper.style.alignItems = 'flex-end';
+                wrapper.style.gap = '6px';
                 
                 const retractBtn = document.createElement('div');
                 retractBtn.className = 'retract-btn';
                 retractBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>';
                 retractBtn.onclick = () => retractMessage(msg.id);
                 wrapper.appendChild(retractBtn);
+
+                const timeObj = new Date(msg.time);
+                const timeStr = `${timeObj.getHours().toString().padStart(2, '0')}:${timeObj.getMinutes().toString().padStart(2, '0')}`;
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'msg-time';
+                timeDiv.innerText = timeStr;
+                wrapper.appendChild(timeDiv);
 
                 const rightCol = document.createElement('div');
                 rightCol.style.display = 'flex';
@@ -2185,10 +2241,21 @@
         try {
             const baseUrl = url.trim().replace(/\/+$/, '');
             
+            // 精准实现 15 分钟记忆关联
             const bubbleIndex = userData.messages.findIndex(m => m.id === bubbleId);
-            const historyMsgs = userData.messages.slice(Math.max(0, bubbleIndex - 20), bubbleIndex);
+            const bubbleTime = new Date(bubbleData.time || Date.now()).getTime();
+            const fifteenMinsMs = 15 * 60 * 1000;
+            
+            const historyMsgs = userData.messages.slice(0, bubbleIndex).filter(m => {
+                if (!m.time) return false;
+                const msgTime = new Date(m.time).getTime();
+                return (bubbleTime - msgTime) <= fifteenMinsMs;
+            });
+
+            const recentHistoryMsgs = historyMsgs.slice(-20);
+            
             let historyStr = "";
-            historyMsgs.forEach(m => {
+            recentHistoryMsgs.forEach(m => {
                 if (m.type === 'sent') {
                     let content = m.text || "";
                     if (m.quoteText) content = `[引用粉丝: "${m.quoteText}"] ` + content;
@@ -2205,7 +2272,7 @@
             if (hasSticker) aiContext += `- 还发送了表情包互动\n`;
 
             const prompt = `你是一个扮演真实狂热粉丝的AI群控大脑。
-你的爱豆（团队：${userData.persona.team || '无'}，姓名：${userData.persona.realName || '无'}，MBTI：${userData.persona.mbti || '无'}，性格：${userData.persona.personality || '无'}）。
+你的爱豆（团队：${userData.persona.team || '无'}，姓名：${userData.persona.realName || '无'}）。注意：仅在极其必要时才符合他的性格设定，绝不要在回复中生硬地提及他的MBTI或兴趣爱好！
 
 【之前的聊天上下文（粉丝有记忆）】
 ${historyStr}
@@ -2213,16 +2280,17 @@ ${historyStr}
 【爱豆刚刚发送的最新内容】
 ${aiContext}
 
-任务：紧密结合“之前的聊天上下文”和“最新发送的内容”，快速生成20条极具“活人感”的粉丝回复。
+任务：紧密结合上下文和最新内容，快速生成20条极具“活人感”的粉丝回复。
 语言比例：8条韩语，4条中文，2条日语，4条英语，2条其他语言。
 要求（非常重要）：
-1. 粉丝是有记忆的！回复要体现出对前文的关联和连贯的反应。
-2. 彻底抛弃AI机械感！模仿真实饭圈女孩/男孩的语气。情绪极其饱满，经常使用感叹号、波浪号(~)、哭泣(ㅠㅠ, 呜呜)、尖叫(啊啊啊啊)。
-3. 大量使用饭圈黑话、缩写、网络流行语（如：晕、绝了、疯了吧、大发、대박、미쳤다、omg、literally crying）。
-4. 【绝对禁止】在回复中直接说出具体的时间数值，也不要像机器人一样机械地问候早安晚安。
-5. 绝对不能重复。
-6. 必须严格只返回 JSON 数组格式，不要任何 Markdown 标记（不要写 \`\`\`json ），不要任何解释。内部字符串必须使用单引号或转义双引号，防止JSON解析失败！
-示例：["回复1", "回复2", ...]`;
+1. 反应真实自然：针对爱豆的话给出最直接、本能的反应（如吐槽、关心、花痴、玩梗）。
+2. 长度参差不齐：有的稍短，有的中等，有的稍长，打破机械感。
+3. 严格克制Emoji：每句话最多1-2个可爱的Emoji，甚至可以完全不用，拒绝满屏奇怪的Emoji。
+4. 绝对禁止鹦鹉学舌：绝不要重复或照抄爱豆说过的话！
+5. 绝对禁止报时：不要在回复中说出具体的几点几分，也不要机械地问早安晚安。
+6. 绝对不能重复。
+7. 必须严格只返回 JSON 数组格式，不要任何 Markdown 标记（不要写 \`\`\`json ），不要任何解释。内部字符串必须使用单引号或转义双引号，防止JSON解析失败！
+示例：["疯了吧", "回复2", ...]`;
 
             const response = await fetchWithTimeout(`${baseUrl}/v1/chat/completions`, {
                 method: 'POST',
