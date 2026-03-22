@@ -2,9 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- ================= 强制全屏与沉浸式配置 ================= -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
@@ -12,11 +11,14 @@
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg">
     <link rel="manifest" href='data:application/manifest+json,{"name":"Lysn idol ver.","short_name":"Lysn idol ver.","display":"standalone","start_url":".","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
-    <!-- ======================================================== -->
 
     <title>Lysn idol ver.</title>
     <style id="dynamic-font"></style>
     <style>
+        :root {
+            --theme-color: #9F85F1;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -25,7 +27,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 核心修复：彻底锁死底层，防止 Safari 滑动拉出地址栏 */
         html, body {
             width: 100%;
             height: 100%;
@@ -120,7 +121,7 @@
             overflow-y: auto;
             padding: 0 20px;
             padding-bottom: 90px;
-            -webkit-overflow-scrolling: touch; /* 保证 iOS 内部滚动顺滑 */
+            -webkit-overflow-scrolling: touch;
         }
 
         .tab-content {
@@ -284,7 +285,7 @@
             display: inline-block;
             width: 4px;
             height: 4px;
-            background-color: #8b5cf6;
+            background-color: var(--theme-color);
             border-radius: 50%;
             vertical-align: super;
             margin-left: 2px;
@@ -334,7 +335,7 @@
             position: absolute;
             top: -6px;
             right: 8px;
-            background-color: #8b5cf6;
+            background-color: var(--theme-color);
             color: #fff;
             font-size: 10px;
             font-weight: bold;
@@ -379,7 +380,7 @@
         .save-btn {
             font-size: 15px;
             font-weight: 700;
-            color: #8b5cf6;
+            color: var(--theme-color);
             cursor: pointer;
         }
 
@@ -461,6 +462,19 @@
 
         .btn-pull:active { background: #e0e0e0; }
         .btn-pull:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .theme-color-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s, border 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .theme-color-btn:active {
+            transform: scale(0.9);
+        }
 
         .chat-room {
             position: absolute;
@@ -550,7 +564,7 @@
         }
 
         .message-right {
-            background-color: #9F85F1; 
+            background-color: var(--theme-color); 
             color: #ffffff;
             padding: 7px 13px;        
             border-radius: 22px 22px 4px 22px;
@@ -575,7 +589,7 @@
             align-items: center;
             margin: 5px auto 15px auto;
             background-color: #ffffff;
-            color: #9F85F1;
+            color: var(--theme-color);
             border-radius: 20px;
             padding: 8px 18px;
             font-size: 13px;
@@ -652,7 +666,7 @@
             transition: background-color 0.2s;
         }
 
-        .send-btn.active { background-color: #9F85F1; }
+        .send-btn.active { background-color: var(--theme-color); }
 
         .modal-overlay {
             position: absolute;
@@ -703,12 +717,12 @@
         }
 
         .modal-content input:focus {
-            border-color: #9F85F1;
+            border-color: var(--theme-color);
             background: #fff;
         }
 
         .modal-content button {
-            background: #9F85F1;
+            background: var(--theme-color);
             color: #fff;
             border: none;
             padding: 12px 0;
@@ -760,7 +774,7 @@
         .fan-folded-arrow {
             width: 26px;
             height: 26px;
-            background: #9F85F1;
+            background: var(--theme-color);
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -826,7 +840,7 @@
         }
         .replies-footer {
             height: 60px;
-            background: #9F85F1;
+            background: var(--theme-color);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -880,7 +894,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.8); z-index: 400;
             display: flex; justify-content: center; align-items: center;
-            font-size: 14px; font-weight: bold; color: #9F85F1;
+            font-size: 14px; font-weight: bold; color: var(--theme-color);
             opacity: 0; pointer-events: none; transition: opacity 0.2s;
         }
         .loading-overlay.show { opacity: 1; pointer-events: auto; }
@@ -947,7 +961,7 @@
             object-fit: contain; 
         }
         .sticker-item.selected {
-            border: 2px solid #9F85F1;
+            border: 2px solid var(--theme-color);
             position: relative;
         }
         .sticker-item.selected::after {
@@ -955,7 +969,7 @@
             position: absolute;
             top: 5px;
             right: 5px;
-            background: #9F85F1;
+            background: var(--theme-color);
             color: #fff;
             width: 18px;
             height: 18px;
@@ -987,7 +1001,7 @@
             height: 100px;
         }
         .add-sticker-textarea:focus {
-            border-color: #9F85F1;
+            border-color: var(--theme-color);
             background: #fff;
         }
     </style>
@@ -1085,6 +1099,18 @@
         
         <div class="settings-content">
             <div class="settings-section">
+                <div class="settings-section-title">Theme Color (테마 색상)</div>
+                <div class="settings-row" style="justify-content: space-between; border-bottom: none; padding-bottom: 0;">
+                    <div class="theme-color-btn" data-color="#9F85F1" style="background-color: #9F85F1;" onclick="setThemeColor('#9F85F1')"></div>
+                    <div class="theme-color-btn" data-color="#FF8E9E" style="background-color: #FF8E9E;" onclick="setThemeColor('#FF8E9E')"></div>
+                    <div class="theme-color-btn" data-color="#7BA4F4" style="background-color: #7BA4F4;" onclick="setThemeColor('#7BA4F4')"></div>
+                    <div class="theme-color-btn" data-color="#76D6A8" style="background-color: #76D6A8;" onclick="setThemeColor('#76D6A8')"></div>
+                    <div class="theme-color-btn" data-color="#FFB84D" style="background-color: #FFB84D;" onclick="setThemeColor('#FFB84D')"></div>
+                    <div class="theme-color-btn" data-color="#333333" style="background-color: #333333;" onclick="setThemeColor('#333333')"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <div class="settings-section-title">Idol Persona</div>
                 <div class="settings-row">
                     <label>所属团队</label>
@@ -1160,7 +1186,7 @@
             </div>
 
             <div class="chat-input-wrapper">
-                <input type="text" id="chat-input" placeholder="팬들의 닉네임 @@@를 불러 주세요 :)" oninput="checkInputState()" onkeydown="if(event.key === 'Enter' && !event.isComposing) { event.preventDefault(); sendChatMessage(); }">
+                <input type="text" id="chat-input" placeholder="팬들의 닉네임 @@@를 불러 주세요 :)" oninput="checkInputState()" onkeydown="handleInputKeydown(event)">
                 <div class="smiley-btn" onclick="openStickerPanel()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -1218,7 +1244,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </div>
                 <div onclick="openAddStickerModal()" style="cursor:pointer; display:flex; align-items:center;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9F85F1" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <svg class="sticker-panel-add-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--theme-color)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </div>
             </div>
         </div>
@@ -1360,7 +1386,8 @@
         messages: [],
         stickers: [],
         chatBg: '',     
-        customFont: null  
+        customFont: null,
+        themeColor: '#9F85F1' 
     };
 
     let pendingMedia = null; 
@@ -1499,6 +1526,25 @@
         document.getElementById('header-icons').innerHTML = pageConfig[tabId].icons.join('');
     }
 
+    async function setThemeColor(color) {
+        userData.themeColor = color;
+        document.documentElement.style.setProperty('--theme-color', color);
+        updateThemeSelectionUI();
+        await saveUserData();
+    }
+
+    function updateThemeSelectionUI() {
+        document.querySelectorAll('.theme-color-btn').forEach(btn => {
+            if (btn.dataset.color.toUpperCase() === (userData.themeColor || '#9F85F1').toUpperCase()) {
+                btn.style.border = '2px solid #000';
+                btn.style.transform = 'scale(1.1)';
+            } else {
+                btn.style.border = '2px solid transparent';
+                btn.style.transform = 'scale(1)';
+            }
+        });
+    }
+
     async function saveUserData() {
         try {
             await DB.set('userData', userData);
@@ -1558,6 +1604,9 @@
         }
 
         userData.stickers = userData.stickers || [];
+        
+        if (!userData.themeColor) userData.themeColor = '#9F85F1';
+        document.documentElement.style.setProperty('--theme-color', userData.themeColor);
 
         const nameInput = document.getElementById('more-name-input');
         if (nameInput) nameInput.value = userData.name;
@@ -1735,6 +1784,21 @@
             `;
         } else {
             styleTag.innerHTML = '';
+        }
+    }
+
+    function handleInputKeydown(event) {
+        if (event.key === 'Enter' && !event.isComposing) {
+            event.preventDefault();
+            sendChatMessage();
+        } else if (event.key === 'Backspace' && event.target.value === '') {
+            if (pendingMedia || pendingSticker || pendingQuote) {
+                pendingMedia = null;
+                pendingSticker = null;
+                pendingQuote = null;
+                event.target.placeholder = "팬들의 닉네임 @@@를 불러 주세요 :)";
+                checkInputState();
+            }
         }
     }
 
@@ -2022,6 +2086,8 @@
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'message-wrapper';
+                wrapper.style.alignItems = 'flex-end';
+                wrapper.style.gap = '6px';
                 
                 const retractBtn = document.createElement('div');
                 retractBtn.className = 'retract-btn';
@@ -2164,10 +2230,7 @@
             if (hiddenDesc) aiContext += `- 媒体画面描述：${hiddenDesc}\n`;
             if (hasSticker) aiContext += `- 还发送了表情包互动\n`;
 
-            const now = new Date();
-            const timeString = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-            const prompt = `你是一个扮演真实狂热粉丝的AI群控大脑。当前真实时间是：${timeString}。
+            const prompt = `你是一个扮演真实狂热粉丝的AI群控大脑。
 你的爱豆（团队：${userData.persona.team || '无'}，姓名：${userData.persona.realName || '无'}，MBTI：${userData.persona.mbti || '无'}，性格：${userData.persona.personality || '无'}）。
 
 【之前的聊天上下文（粉丝有记忆）】
@@ -2182,7 +2245,7 @@ ${aiContext}
 1. 粉丝是有记忆的！回复要体现出对前文的关联和连贯的反应。
 2. 彻底抛弃AI机械感！模仿真实饭圈女孩/男孩的语气。情绪极其饱满，经常使用感叹号、波浪号(~)、哭泣(ㅠㅠ, 呜呜)、尖叫(啊啊啊啊)。
 3. 大量使用饭圈黑话、缩写、网络流行语（如：晕、绝了、疯了吧、大发、대박、미쳤다、omg、literally crying）。
-4. 结合当前时间给出真实反应（如半夜不睡、上课/上班摸鱼看消息、催吃饭等）。
+4. 【绝对禁止】在回复中直接说出具体的时间数值，也不要像机器人一样机械地问候早安晚安。
 5. 绝对不能重复。
 6. 必须严格只返回 JSON 数组格式，不要任何 Markdown 标记（不要写 \`\`\`json ），不要任何解释。内部字符串必须使用单引号或转义双引号，防止JSON解析失败！
 示例：["回复1", "回复2", ...]`;
@@ -2324,13 +2387,13 @@ ${aiContext}
                 bubble.appendChild(divider);
 
                 const transDiv = document.createElement('div');
-                transDiv.style.cssText = 'color: #9F85F1; font-size: 14px;';
+                transDiv.style.cssText = 'color: var(--theme-color); font-size: 14px;';
                 transDiv.innerText = translatedText;
                 bubble.appendChild(transDiv);
                 
                 this.innerText = 'A';
-                this.style.color = '#9F85F1';
-                this.style.borderColor = '#9F85F1';
+                this.style.color = 'var(--theme-color)';
+                this.style.borderColor = 'var(--theme-color)';
                 this.dataset.translated = 'true';
             };
             btnGroup.appendChild(transBtn);
@@ -2370,6 +2433,7 @@ ${aiContext}
         } else {
             selectEl.innerHTML = `<option value="">请先拉取或手动输入</option>`;
         }
+        updateThemeSelectionUI();
         document.getElementById('settings-page').classList.add('show');
     }
 
