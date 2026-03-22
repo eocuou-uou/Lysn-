@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- ================= 强制全屏与沉浸式配置 ================= -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
@@ -27,6 +28,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* 核心修复：彻底锁死底层，防止 Safari 滑动拉出地址栏 */
         html, body {
             width: 100%;
             height: 100%;
@@ -51,46 +53,21 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
-        @media (display-mode: standalone) {
-            .header, .sub-page .header, .chat-room .header, .replies-header {
-                padding-top: calc(env(safe-area-inset-top) + 10px) !important;
-                height: auto !important;
-                min-height: calc(55px + env(safe-area-inset-top));
-            }
-            .bottom-nav {
-                padding-bottom: env(safe-area-inset-bottom) !important;
-                height: calc(75px + env(safe-area-inset-bottom)) !important;
-            }
-            .content {
-                padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
-            }
-        }
-
-        .splash-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #fff url('https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg') no-repeat center center;
-            background-size: cover;
-            z-index: 1000;
-            opacity: 1;
-            transition: opacity 0.6s ease-out;
-            pointer-events: none;
-        }
-
-        .splash-screen.hide { opacity: 0; }
-        .splash-screen.removed { display: none; }
-
-        .header {
+        /* ================= 核心修复：统一的 Header 样式 (完美适配状态栏与刘海屏) ================= */
+        .header, .replies-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            padding: 15px 20px 10px;
-            height: 60px;
+            align-items: flex-end; /* 强制底部对齐，防止文字顶入状态栏 */
+            padding: 0 20px 12px 20px;
             background-color: #fff;
             z-index: 20;
+            /* 动态安全区适配：如果没有刘海则默认20px，有刘海则取刘海高度 */
+            padding-top: max(20px, env(safe-area-inset-top));
+            height: calc(48px + max(20px, env(safe-area-inset-top)));
+        }
+        
+        .sub-page .header, .chat-room .header, .replies-header {
+            border-bottom: 1px solid #f5f5f5;
         }
 
         .header-title {
@@ -98,13 +75,25 @@
             font-weight: 900;
             letter-spacing: -0.5px;
             color: #000;
+            margin-bottom: -2px;
+        }
+
+        .sub-page .header-title, .chat-room .header-title {
+            font-size: 17px;
+            margin-bottom: 2px;
+        }
+
+        .replies-header-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 2px;
         }
 
         .header-icons {
             display: flex;
             gap: 16px;
-            margin-bottom: 4px;
             align-items: center;
+            margin-bottom: 2px;
         }
 
         .header-icons svg {
@@ -115,12 +104,14 @@
             stroke-width: 1.5;
             fill: none;
         }
+        /* ========================================================================================= */
 
         .content {
             flex: 1;
             overflow-y: auto;
             padding: 0 20px;
-            padding-bottom: 90px;
+            /* 底部安全区适配 */
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
             -webkit-overflow-scrolling: touch;
         }
 
@@ -295,7 +286,6 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 75px;
             background-color: #ffffff;
             border-top: 1px solid #f0f0f0;
             display: flex;
@@ -304,6 +294,9 @@
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -2px 15px rgba(0,0,0,0.03);
             z-index: 10;
+            /* 底部安全区适配 */
+            padding-bottom: env(safe-area-inset-bottom);
+            height: calc(65px + env(safe-area-inset-bottom));
         }
 
         .nav-item {
@@ -363,19 +356,6 @@
         }
 
         .sub-page.show { transform: translateX(0); }
-
-        .sub-page .header {
-            border-bottom: 1px solid #f5f5f5;
-            height: 55px;
-            padding: 0 20px;
-            align-items: center;
-        }
-
-        .sub-page .header-title {
-            font-size: 17px;
-            font-weight: 700;
-            letter-spacing: 0;
-        }
 
         .save-btn {
             font-size: 15px;
@@ -495,16 +475,6 @@
         
         .chat-room.show { transform: translateX(0); }
 
-        .chat-room .header {
-            background-color: #fff;
-            border-bottom: 1px solid #f0f0f0;
-            height: 55px;
-            padding: 0 20px;
-            align-items: center;
-            display: flex;
-            justify-content: space-between;
-        }
-
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -605,6 +575,7 @@
         .chat-input-area {
             background-color: #fff;
             padding: 10px 15px;
+            /* 底部安全区适配 */
             padding-bottom: max(10px, env(safe-area-inset-bottom));
             display: flex;
             align-items: center;
@@ -667,6 +638,20 @@
         }
 
         .send-btn.active { background-color: var(--theme-color); }
+
+        .splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff url('https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg') no-repeat center center;
+            background-size: cover;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none;
+        }
 
         .modal-overlay {
             position: absolute;
@@ -822,16 +807,7 @@
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .replies-page.show { transform: translateX(0); }
-        .replies-header {
-            height: 55px;
-            background: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid #eee;
-        }
-        .replies-header-title { font-size: 16px; font-weight: bold; }
+
         .replies-content {
             flex: 1;
             overflow-y: auto;
@@ -839,7 +815,7 @@
             -webkit-overflow-scrolling: touch;
         }
         .replies-footer {
-            height: 60px;
+            height: calc(50px + env(safe-area-inset-bottom));
             background: var(--theme-color);
             display: flex;
             justify-content: center;
@@ -2086,8 +2062,6 @@
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'message-wrapper';
-                wrapper.style.alignItems = 'flex-end';
-                wrapper.style.gap = '6px';
                 
                 const retractBtn = document.createElement('div');
                 retractBtn.className = 'retract-btn';
