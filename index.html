@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- ================= 强制全屏、桌面图标与名称配置 ================= -->
+    <!-- iOS Safari 专属配置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="bubble">
+    <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
+    <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg">
+    
+    <!-- Android Chrome 专属配置 -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
-    <link rel="apple-touch-icon" href="https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Dear U bubble","short_name":"bubble","display":"standalone","start_url":".","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg","sizes":"512x512","type":"image/jpeg"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Lysn idol ver.","short_name":"Lysn idol ver.","display":"standalone","start_url":".","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
+    <!-- ================================================================ -->
 
-    <title>Dear U bubble</title>
+    <title>Lysn idol ver.</title>
     <style id="dynamic-font"></style>
     <style>
         * {
@@ -757,6 +762,11 @@
         .bouncing .emoji-span:nth-child(3) { animation-delay: 0.2s; }
         .bouncing .emoji-span:nth-child(4) { animation-delay: 0.3s; }
         .bouncing .emoji-span:nth-child(5) { animation-delay: 0.4s; }
+        .bouncing .emoji-span:nth-child(6) { animation-delay: 0.5s; }
+        .bouncing .emoji-span:nth-child(7) { animation-delay: 0.6s; }
+        .bouncing .emoji-span:nth-child(8) { animation-delay: 0.7s; }
+        .bouncing .emoji-span:nth-child(9) { animation-delay: 0.8s; }
+        .bouncing .emoji-span:nth-child(10) { animation-delay: 0.9s; }
 
         .replies-page {
             position: absolute;
@@ -1224,7 +1234,7 @@
     </div>
 
     <div id="loading-overlay" class="loading-overlay">
-        粉丝正在疯狂回复中...
+        <span id="loading-text">粉丝正在疯狂回复中...</span>
     </div>
 
 </div>
@@ -1290,7 +1300,11 @@
             if (!this.isSupported || !this.db) {
                 try {
                     localStorage.setItem('bubble_' + key, JSON.stringify(value));
-                } catch (e) {}
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        alert("浏览器存储空间不足！如果您刚刚设置了超大字体，请尝试恢复默认或清理空间。");
+                    }
+                }
                 return Promise.resolve();
             }
             return new Promise((resolve, reject) => {
@@ -1322,6 +1336,15 @@
     let pendingSticker = null; 
     let isStickerDeleteMode = false;
     let selectedStickersToDelete = new Set();
+
+    function showLoading(text) {
+        document.getElementById('loading-text').innerText = text;
+        document.getElementById('loading-overlay').classList.add('show');
+    }
+
+    function hideLoading() {
+        document.getElementById('loading-overlay').classList.remove('show');
+    }
 
     async function translateText(text) {
         const url = userData.api.url;
@@ -1375,7 +1398,28 @@
         ['🦊','🦊','🧡','🧡','🍂'], ['🎉','🎉','🎊','🥳','🍾'], ['🎤','🎧','🎶','🎵','🎸'],
         ['🥺','😭','🙇‍♀️','🙇‍♀️','🙇‍♀️'], ['👀','👀','🫣','🫣','🫣'], ['🫠','🫠','🫠','🫠','🫠'],
         ['🍒','🍒','🍒','🍒','🍒'], ['🍉','🍉','🍉','🍉','🍉'], ['🥑','🥑','🥑','🥑','🥑'],
-        ['💖','💘','💝','💞','💓'], ['⭐','🌟','✨','💫','☄️'], ['🔥','💥','🧨','🎇','🎆']
+        ['💖','💘','💝','💞','💓'], ['⭐','🌟','✨','💫','☄️'], ['🔥','💥','🧨','🎇','🎆'],
+        ['🥺','🥺','🥺','🥺','🥺'], ['😭','😭','😭','😭','😭'], ['😱','😱','😱','😱','😱'],
+        ['😻','😻','😻','😻','😻'], ['🙈','🙈','🙈','🙈','🙈'], ['🙊','🙊','🙊','🙊','🙊'],
+        ['🌹','🌹','🌹','🌹','🌹'], ['🌻','🌻','🌻','🌻','🌻'], ['🌷','🌷','🌷','🌷','🌷'],
+        ['🍩','🍩','🍩','🍩','🍩'], ['🍰','🍰','🍰','🍰','🍰'], ['🍦','🍦','🍦','🍦','🍦'],
+        ['🍼','🍼','🍼','🍼','🍼'], ['🧸','🧸','🧸','🧸','🧸'], ['🎈','🎈','🎈','🎈','🎈'],
+        ['🎁','🎁','🎁','🎁','🎁'], ['💌','💌','💌','💌','💌'], ['🧋','🧋','🧋','🧋','🧋'],
+        ['🍓','🥛','🍓','🥛','🍓'], ['🍑','🍑','🍑','🍑','🍑'], ['🍋','🍋','🍋','🍋','🍋'],
+        ['🐶','🦴','🐶','🦴','🐶'], ['🐱','🐟','🐱','🐟','🐱'], ['🐰','🥕','🐰','🥕','🐰'],
+        ['🐻','🍯','🐻','🍯','🐻'], ['🐼','🎋','🐼','🎋','🐼'], ['🐯','🍖','🐯','🍖','🐯'],
+        ['🦁','👑','🦁','👑','🦁'], ['🦊','🦊','🦊','🦊','🦊'], ['🐺','🌕','🐺','🌕','🐺'],
+        ['🐧','❄️','🐧','❄️','🐧'], ['🐬','🌊','🐬','🌊','🐬'], ['🐳','🐳','🐳','🐳','🐳'],
+        ['🦋','✨','🦋','✨','🦋'], ['🐝','🍯','🐝','🍯','🐝'], ['🐞','🍀','🐞','🍀','🐞'],
+        ['🐢','🐢','🐢','🐢','🐢'], ['🦕','🦕','🦕','🦕','🦕'], ['🦖','🦖','🦖','🦖','🦖'],
+        ['🐙','🐙','🐙','🐙','🐙'], ['🦑','🦑','🦑','🦑','🦑'], ['🦐','🦐','🦐','🦐','🦐'],
+        ['🍀','✨','🍀','✨','🍀'], ['🍁','🍁','🍁','🍁','🍁'], ['🍄','🍄','🍄','🍄','🍄'],
+        ['🌍','🌍','🌍','🌍','🌍'], ['🌞','🌞','🌞','🌞','🌞'], ['🌝','🌝','🌝','🌝','🌝'],
+        ['🌈','☁️','🌈','☁️','🌈'], ['☔️','☔️','☔️','☔️','☔️'], ['⛄️','⛄️','⛄️','⛄️','⛄️'],
+        ['🔥','❤️‍🔥','🔥','❤️‍🔥','🔥'], ['💧','💧','💧','💧','💧'], ['🫧','🫧','🫧','🫧','🫧'],
+        ['🎵','🎶','🎵','🎶','🎵'], ['🎨','🎨','🎨','🎨','🎨'], ['🎬','🎬','🎬','🎬','🎬'],
+        ['🎮','🎮','🎮','🎮','🎮'], ['🧩','🧩','🧩','🧩','🧩'], ['🎲','🎲','🎲','🎲','🎲'],
+        ['🎯','🎯','🎯','🎯','🎯'], ['🎳','🎳','🎳','🎳','🎳'], ['🔮','🔮','🔮','🔮','🔮']
     ];
 
     const avatarEmojis = [
@@ -1386,7 +1430,12 @@
         '🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🐈','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨',
         '🦡','🦫','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🌵','🎄','🌲','🌳','🌴','🪵','🌱','🌿','☘',
         '🍀','🎍','🪴','🎋','🍃','🍂','🍁','🍄','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🍎','🍓','🍒',
-        '🍉','🍑','🍊','🥭','🍍','🍌','🍋','🍈','🍏','🍐','🥝','🫐','🍇','🥥','🍅','🥑','🎀','🧸','🎈','🔮'
+        '🍉','🍑','🍊','🥭','🍍','🍌','🍋','🍈','🍏','🍐','🥝','🫐','🍇','🥥','🍅','🥑','🎀','🧸','🎈','🔮',
+        '😀','😃','😄','😁','😆','😅','🤣','🥲','☺️','😊','🙂','🙃','😉','😌','😗','😙','😚','😋','😛','😝',
+        '😜','🤪','🤨','🧐','🤓','🥸','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','😢','😤',
+        '😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤥','😶','😐','😑','😬','🙄','😯',
+        '😦','😧','😮','😲','🥱','😴','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿',
+        '👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'
     ];
 
     setInterval(() => {
@@ -1520,6 +1569,10 @@
 
     async function handleAvatarUpload(file) {
         if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert("请选择图片文件作为头像！");
+            return;
+        }
         const moreAvatar = document.getElementById('more-avatar-img');
         if (moreAvatar) moreAvatar.style.opacity = '0.5';
         try {
@@ -1561,6 +1614,13 @@
         const file = event.target.files[0];
         event.target.value = '';
         if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert("请选择图片文件作为背景！");
+            return;
+        }
+        
+        showLoading("正在处理背景，请稍候...");
+        
         try {
             const compressed = await compressImage(file, 1080, 1920, 0.8);
             userData.chatBg = compressed;
@@ -1569,6 +1629,8 @@
             closeChatSettings();
         } catch (e) {
             alert("背景设置失败");
+        } finally {
+            hideLoading();
         }
     }
 
@@ -1577,10 +1639,7 @@
         event.target.value = '';
         if (!file) return;
         
-        if (file.size > 10 * 1024 * 1024) { 
-            alert("字体文件过大，请选择 10MB 以下的字体文件！");
-            return;
-        }
+        showLoading("正在加载字体，请稍候...");
 
         const reader = new FileReader();
         reader.onload = async function(e) {
@@ -1590,8 +1649,10 @@
                 applyChatSettings();
                 closeChatSettings();
             } catch (err) {
-                alert("保存字体失败，可能是超出了存储限制。");
+                alert("保存字体失败，可能是超出了浏览器存储限制。");
                 applyCustomFont(userData.customFont); 
+            } finally {
+                hideLoading();
             }
         };
         reader.readAsDataURL(file);
@@ -1608,6 +1669,11 @@
     async function clearChatHistory() {
         if (confirm("정말 대화 내용을 지우시겠습니까?\n(真的要清空聊天记录吗？)")) {
             userData.messages = [];
+            pendingMedia = null;
+            pendingSticker = null;
+            document.getElementById('chat-input').value = '';
+            document.getElementById('chat-input').placeholder = "팬들의 닉네임 @@@를 불러 주세요 :)";
+            checkInputState();
             await saveUserData();
             renderMessages();
             closeChatSettings();
@@ -1777,6 +1843,11 @@
         const file = event.target.files[0];
         event.target.value = ''; 
         if (!file) return;
+
+        if (file.size > 50 * 1024 * 1024) {
+            alert("文件过大，请选择 50MB 以下的图片或视频！");
+            return;
+        }
 
         const isVideo = file.type.startsWith('video/');
         const desc = prompt("请输入这段照片/视频的文字描述（用于让粉丝AI理解内容）：\n(发送后屏幕显示照片，但AI会根据此描述回复)");
@@ -2018,7 +2089,7 @@
             return;
         }
 
-        document.getElementById('loading-overlay').classList.add('show');
+        showLoading("粉丝正在疯狂回复中...");
 
         try {
             const baseUrl = url.trim().replace(/\/+$/, '');
@@ -2073,13 +2144,22 @@
                 repliesArray = JSON.parse(match ? match[0] : content);
             } catch (e) {
                 console.warn("JSON解析彻底失败，启动终极正则强制提取机制...");
-                repliesArray = content.split('\n')
-                    .map(line => line.replace(/^[-*0-9.\s]+/, '').replace(/(^["']|["']$)/g, '').trim()) 
-                    .filter(line => line.length > 1 && !line.includes('```') && !line.includes('[') && !line.includes('{'));
+                const fallbackMatch = content.match(/(["'])(?:(?=(\\?))\2.)*?\1/g);
+                if (fallbackMatch && fallbackMatch.length >= 5) {
+                    repliesArray = fallbackMatch.map(s => s.replace(/(^["']|["']$)/g, '').trim()).filter(s => s.length > 0);
+                } else {
+                    repliesArray = content.split('\n')
+                        .map(line => line.replace(/^[-*0-9.\s]+/, '').trim()) 
+                        .filter(line => line.length > 2 && !line.includes('```') && !line.includes('[') && !line.includes('{'));
+                }
             }
 
             if (!Array.isArray(repliesArray) || repliesArray.length === 0) {
-                throw new Error("提取回复内容失败");
+                // 绝对保底方案：如果所有提取都失败，用标点符号强行切割
+                repliesArray = content.split(/[.!?。！？\n]+/).map(s => s.trim()).filter(s => s.length > 2);
+                if (repliesArray.length === 0) {
+                    throw new Error("提取回复内容失败");
+                }
             }
 
             for (let i = repliesArray.length - 1; i > 0; i--) {
@@ -2101,7 +2181,7 @@
                 alert("生成失败，请检查 API 配置或网络。\n错误信息: " + error.message);
             }
         } finally {
-            document.getElementById('loading-overlay').classList.remove('show');
+            hideLoading();
         }
     }
 
