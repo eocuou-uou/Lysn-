@@ -4,15 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- ================= 强制全屏、桌面图标与名称配置 (终极防错版) ================= -->
+    <!-- iOS Safari 专属配置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="bubble">
+    <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg">
+    
+    <!-- Android Chrome 专属配置 (使用严格的 URL 编码防止解析失败) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
-    <link rel="apple-touch-icon" href="https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Dear U bubble","short_name":"bubble","display":"standalone","start_url":".","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg","sizes":"512x512","type":"image/jpeg"}]}'>
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Lysn%20idol%20ver.%22%2C%22short_name%22%3A%22Lysn%20idol%20ver.%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%23ffffff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn.phototourl.com%2Fuploads%2F2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%5D%7D">
+    <!-- ============================================================================ -->
 
-    <title>Dear U bubble</title>
+    <title>Lysn idol ver.</title>
     <style id="dynamic-font"></style>
     <style>
         * {
@@ -514,11 +520,10 @@
             background-color: #e0e0e0;
         }
 
-        /* ================= 修改：引用气泡样式 (更小更透明) ================= */
         .quote-bubble {
-            background-color: rgba(255, 255, 255, 0.65); /* 透明度变低 */
-            padding: 8px 12px; /* 面积变小 */
-            border-radius: 14px; /* 匹配变小的面积 */
+            background-color: rgba(255, 255, 255, 0.65);
+            padding: 8px 12px;
+            border-radius: 14px;
             font-size: 13px;
             color: #333;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -528,15 +533,14 @@
         }
         .quote-title {
             font-weight: 900;
-            font-size: 12px; /* 稍微调小 */
-            margin-bottom: 2px; /* 间距变小 */
+            font-size: 12px;
+            margin-bottom: 2px;
             color: #000;
         }
         .quote-text {
-            color: #666; /* 保证透明背景下的可读性 */
+            color: #666;
             font-size: 13px;
         }
-        /* ================================================================= */
 
         .message-right {
             background-color: #9F85F1; 
@@ -1624,27 +1628,14 @@
         showLoading("正在处理背景，请稍候...");
         
         try {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    if (w > 1080) { h = h * (1080 / w); w = 1080; }
-                    canvas.width = w; canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    userData.chatBg = canvas.toDataURL('image/jpeg', 0.8);
-                    await saveUserData();
-                    applyChatSettings();
-                    closeChatSettings();
-                    hideLoading();
-                };
-            };
-            reader.readAsDataURL(file);
+            const compressed = await compressImage(file, 1080, 1920, 0.8);
+            userData.chatBg = compressed;
+            await saveUserData();
+            applyChatSettings();
+            closeChatSettings();
         } catch (e) {
             alert("背景设置失败");
+        } finally {
             hideLoading();
         }
     }
@@ -2009,8 +2000,6 @@
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'message-wrapper';
-                wrapper.style.alignItems = 'flex-end';
-                wrapper.style.gap = '6px';
                 
                 const retractBtn = document.createElement('div');
                 retractBtn.className = 'retract-btn';
