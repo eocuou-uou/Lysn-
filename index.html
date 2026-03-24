@@ -2,21 +2,15 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 强制开启沉浸式全屏，适配刘海屏 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- ================= 强制全屏与沉浸式配置 (iOS 18 终极适配版) ================= -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
-    <meta name="apple-touch-fullscreen" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="format-detection" content="telephone=no">
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg">
-    <!-- 修复：去除了 start_url 并进行严格的 URL 编码，防止 iOS 18+ 解析失败导致跳转回 Safari -->
     <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Lysn%20idol%20ver.%22%2C%22short_name%22%3A%22Lysn%20idol%20ver.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%23ffffff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn.phototourl.com%2Fuploads%2F2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%5D%7D">
-    <!-- ============================================================================== -->
 
     <title>Lysn idol ver.</title>
 
@@ -44,15 +38,15 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 彻底锁死底层，防止 Safari 滑动拉出地址栏或露出灰底 */
+        /* 核心修复：使用 100dvh 彻底锁死视口，防止上下滑动露底 */
         html, body {
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100dvh;
             overflow: hidden;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #f5f5f5;
+            background-color: #000000; /* 边缘保护色 */
             display: flex;
             justify-content: center;
         }
@@ -61,7 +55,7 @@
             width: 100%;
             max-width: 400px;
             background-color: #ffffff;
-            height: 100%;
+            height: 100dvh;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -69,7 +63,7 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
-        /* ================= 终极防重叠 Header 样式 ================= */
+        /* ================= 顶部状态栏防重叠适配 ================= */
         .header, .sub-page .header, .chat-room .header, .replies-header {
             display: flex;
             justify-content: space-between;
@@ -93,14 +87,7 @@
             padding-top: calc(max(24px, env(safe-area-inset-top)) + 12px) !important;
             min-height: calc(max(24px, env(safe-area-inset-top)) + 50px) !important;
         }
-
-        html.android-pwa .header, 
-        html.android-pwa .sub-page .header, 
-        html.android-pwa .chat-room .header, 
-        html.android-pwa .replies-header {
-            padding-top: calc(12px + env(safe-area-inset-top)) !important;
-            min-height: calc(55px + env(safe-area-inset-top)) !important;
-        }
+        /* ======================================================== */
 
         .splash-screen {
             position: absolute;
@@ -329,15 +316,18 @@
             margin-left: 2px;
         }
 
+        /* ================= 核心修复：底部导航栏防变形 ================= */
         .bottom-nav {
             position: absolute;
             bottom: 0;
+            left: 0;
             width: 100%;
             background-color: #ffffff;
             border-top: 1px solid #f0f0f0;
             display: flex;
             justify-content: space-around;
-            align-items: center;
+            align-items: flex-start; /* 重点：强制顶部对齐，防止被拉伸到中间 */
+            padding-top: 12px; /* 图标距离顶部的固定距离 */
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -2px 15px rgba(0,0,0,0.03);
             z-index: 10;
@@ -351,10 +341,11 @@
             align-items: center;
             justify-content: center;
             width: 60px;
-            height: 40px;
+            height: 40px; /* 固定高度，不受外层拉伸影响 */
             cursor: pointer;
             position: relative;
         }
+        /* ============================================================== */
 
         .nav-item svg {
             width: 26px;
@@ -845,16 +836,7 @@
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .replies-page.show { transform: translateX(0); }
-        .replies-header {
-            height: 55px;
-            background: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid #eee;
-        }
-        .replies-header-title { font-size: 16px; font-weight: bold; }
+        
         .replies-content {
             flex: 1;
             overflow-y: auto;
@@ -1181,6 +1163,15 @@
                     </select>
                 </div>
             </div>
+
+            <div class="settings-section" style="margin-bottom: 30px;">
+                <div class="settings-section-title">Data Management (데이터 관리)</div>
+                <div class="settings-row" style="justify-content: space-between; border-bottom: none;">
+                    <button class="btn-pull" onclick="exportData()" style="width: 48%; background: var(--theme-color); color: #fff;">导出备份 (Export)</button>
+                    <button class="btn-pull" onclick="document.getElementById('backup-upload').click()" style="width: 48%;">导入备份 (Import)</button>
+                </div>
+            </div>
+            <input type="file" id="backup-upload" accept=".json" style="display:none;" onchange="handleImportData(event)">
         </div>
     </div>
 
@@ -1317,7 +1308,6 @@
 </div>
 
 <script>
-    // 异步读取文件，解决并发冲突
     function readFileAsBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1440,6 +1430,83 @@
         const hours = d.getHours().toString().padStart(2, '0');
         const mins = d.getMinutes().toString().padStart(2, '0');
         return `${hours}:${mins}`;
+    }
+
+    // ================= 导出与导入功能 =================
+    function exportData() {
+        try {
+            const dataStr = JSON.stringify(userData);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const date = new Date();
+            const dateStr = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`;
+            a.download = `lysn_backup_${dateStr}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert("导出失败，可能是聊天记录（视频/图片）过大超出了浏览器内存限制。请尝试删除一些大视频后重试。");
+        }
+    }
+
+    async function handleImportData(event) {
+        const file = event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+
+        showLoading("正在恢复数据...");
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (typeof importedData !== 'object' || !importedData.messages) {
+                    throw new Error("无效的备份文件格式");
+                }
+                
+                userData = { ...userData, ...importedData };
+                userData.messages = userData.messages || [];
+                userData.stickers = userData.stickers || [];
+                userData.persona = userData.persona || {};
+                userData.api = userData.api || {};
+                if (!userData.themeColor) userData.themeColor = '#9F85F1';
+
+                await saveUserData();
+                
+                document.documentElement.style.setProperty('--theme-color', userData.themeColor);
+                applyChatSettings();
+                
+                document.getElementById('set-team').value = userData.persona.team || '';
+                document.getElementById('set-realname').value = userData.persona.realName || '';
+                document.getElementById('set-gender').value = userData.persona.gender || '';
+                document.getElementById('set-birthday').value = userData.persona.birthday || '';
+                document.getElementById('set-mbti').value = userData.persona.mbti || '';
+                document.getElementById('set-personality').value = userData.persona.personality || '';
+                document.getElementById('set-apiurl').value = userData.api.url || '';
+                document.getElementById('set-apikey').value = userData.api.key || '';
+                if (userData.api.model) {
+                    document.getElementById('set-model').innerHTML = `<option value="${userData.api.model}">${userData.api.model}</option>`;
+                }
+                updateThemeSelectionUI();
+
+                // 强制刷新聊天页面和表情包面板
+                renderMessages();
+                renderStickerGrid();
+
+                hideLoading();
+                alert("导入成功！数据已恢复。");
+            } catch (err) {
+                hideLoading();
+                alert("导入失败: " + err.message);
+            }
+        };
+        reader.onerror = () => {
+            hideLoading();
+            alert("读取文件失败");
+        };
+        reader.readAsText(file);
     }
 
     async function translateText(text) {
@@ -1659,7 +1726,6 @@
         applyChatSettings(); 
     }
 
-    // --- 核心修复：重写图片压缩引擎，彻底分离 FileReader，防止崩溃 ---
     function compressImage(file, maxWidth = 1080, maxHeight = 1920, quality = 0.8) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1760,21 +1826,6 @@
         await saveUserData();
         applyChatSettings();
         closeChatSettings();
-    }
-
-    async function clearChatHistory() {
-        if (confirm("정말 대화 내용을 지우시겠습니까?\n(真的要清空聊天记录吗？)")) {
-            userData.messages = [];
-            pendingMedia = null;
-            pendingSticker = null;
-            pendingQuote = null; 
-            document.getElementById('chat-input').value = '';
-            document.getElementById('chat-input').placeholder = "팬들의 닉네임 @@@를 불러 주세요 :)";
-            checkInputState();
-            await saveUserData();
-            renderMessages();
-            closeChatSettings();
-        }
     }
 
     function applyChatSettings() {
@@ -1933,7 +1984,6 @@
         closeAddStickerModal();
     }
 
-    // --- 核心修复：发送多媒体文件逻辑分离，防止崩溃 ---
     async function handleMediaSelect(event) {
         const file = event.target.files[0];
         event.target.value = ''; 
@@ -1954,7 +2004,6 @@
         try {
             let mediaUrl = '';
             
-            // 视频和GIF直接读取，普通图片压缩
             if (isVideo || isGif) {
                 mediaUrl = await readFileAsBase64(file);
             } else if (file.type.startsWith('image/')) {
@@ -2328,7 +2377,6 @@ ${aiContext}
             }
 
             if (!Array.isArray(repliesArray) || repliesArray.length === 0) {
-                // 绝对保底方案
                 repliesArray = content.split(/[.!?。！？\n]+/).map(s => s.trim()).filter(s => s.length > 2);
                 if (repliesArray.length === 0) {
                     throw new Error("提取回复内容失败");
