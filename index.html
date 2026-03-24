@@ -2,15 +2,21 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <!-- 强制开启沉浸式全屏，适配刘海屏 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- ================= 强制全屏与沉浸式配置 (iOS 18 终极适配版) ================= -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
+    <meta name="apple-touch-fullscreen" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Lysn idol ver.","short_name":"Lysn idol ver.","display":"standalone","start_url":".","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
+    <!-- 修复：去除了 start_url 并进行严格的 URL 编码，防止 iOS 18+ 解析失败导致跳转回 Safari -->
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Lysn%20idol%20ver.%22%2C%22short_name%22%3A%22Lysn%20idol%20ver.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%23ffffff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn.phototourl.com%2Fuploads%2F2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%5D%7D">
+    <!-- ============================================================================== -->
 
     <title>Lysn idol ver.</title>
 
@@ -38,6 +44,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* 彻底锁死底层，防止 Safari 滑动拉出地址栏或露出灰底 */
         html, body {
             width: 100%;
             height: 100%;
@@ -62,6 +69,7 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
+        /* ================= 终极防重叠 Header 样式 ================= */
         .header, .sub-page .header, .chat-room .header, .replies-header {
             display: flex;
             justify-content: space-between;
@@ -1651,7 +1659,7 @@
         applyChatSettings(); 
     }
 
-    // 压缩图片引擎 (修复版：去除了 toBlob 嵌套)
+    // --- 核心修复：重写图片压缩引擎，彻底分离 FileReader，防止崩溃 ---
     function compressImage(file, maxWidth = 1080, maxHeight = 1920, quality = 0.8) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1925,6 +1933,7 @@
         closeAddStickerModal();
     }
 
+    // --- 核心修复：发送多媒体文件逻辑分离，防止崩溃 ---
     async function handleMediaSelect(event) {
         const file = event.target.files[0];
         event.target.value = ''; 
@@ -1945,6 +1954,7 @@
         try {
             let mediaUrl = '';
             
+            // 视频和GIF直接读取，普通图片压缩
             if (isVideo || isGif) {
                 mediaUrl = await readFileAsBase64(file);
             } else if (file.type.startsWith('image/')) {
@@ -2318,6 +2328,7 @@ ${aiContext}
             }
 
             if (!Array.isArray(repliesArray) || repliesArray.length === 0) {
+                // 绝对保底方案
                 repliesArray = content.split(/[.!?。！？\n]+/).map(s => s.trim()).filter(s => s.length > 2);
                 if (repliesArray.length === 0) {
                     throw new Error("提取回复内容失败");
