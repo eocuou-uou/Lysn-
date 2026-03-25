@@ -38,7 +38,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 核心修复：使用 100dvh 彻底锁死视口，防止上下滑动露底 */
+        /* 修复：将底层背景色改为白色，彻底消除全面屏底部的黑边 */
         html, body {
             width: 100vw;
             height: 100dvh;
@@ -46,7 +46,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #000000; /* 边缘保护色 */
+            background-color: #ffffff; 
             display: flex;
             justify-content: center;
         }
@@ -63,7 +63,6 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
-        /* ================= 顶部状态栏防重叠适配 ================= */
         .header, .sub-page .header, .chat-room .header, .replies-header {
             display: flex;
             justify-content: space-between;
@@ -87,7 +86,14 @@
             padding-top: calc(max(24px, env(safe-area-inset-top)) + 12px) !important;
             min-height: calc(max(24px, env(safe-area-inset-top)) + 50px) !important;
         }
-        /* ======================================================== */
+
+        html.android-pwa .header, 
+        html.android-pwa .sub-page .header, 
+        html.android-pwa .chat-room .header, 
+        html.android-pwa .replies-header {
+            padding-top: calc(12px + env(safe-area-inset-top)) !important;
+            min-height: calc(55px + env(safe-area-inset-top)) !important;
+        }
 
         .splash-screen {
             position: absolute;
@@ -316,18 +322,16 @@
             margin-left: 2px;
         }
 
-        /* ================= 核心修复：底部导航栏防变形 ================= */
         .bottom-nav {
             position: absolute;
             bottom: 0;
-            left: 0;
             width: 100%;
             background-color: #ffffff;
             border-top: 1px solid #f0f0f0;
             display: flex;
             justify-content: space-around;
-            align-items: flex-start; /* 重点：强制顶部对齐，防止被拉伸到中间 */
-            padding-top: 12px; /* 图标距离顶部的固定距离 */
+            align-items: flex-start; 
+            padding-top: 12px; 
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -2px 15px rgba(0,0,0,0.03);
             z-index: 10;
@@ -341,11 +345,10 @@
             align-items: center;
             justify-content: center;
             width: 60px;
-            height: 40px; /* 固定高度，不受外层拉伸影响 */
+            height: 40px;
             cursor: pointer;
             position: relative;
         }
-        /* ============================================================== */
 
         .nav-item svg {
             width: 26px;
@@ -1432,7 +1435,6 @@
         return `${hours}:${mins}`;
     }
 
-    // ================= 导出与导入功能 =================
     function exportData() {
         try {
             const dataStr = JSON.stringify(userData);
@@ -1491,7 +1493,6 @@
                 }
                 updateThemeSelectionUI();
 
-                // 强制刷新聊天页面和表情包面板
                 renderMessages();
                 renderStickerGrid();
 
@@ -1826,6 +1827,21 @@
         await saveUserData();
         applyChatSettings();
         closeChatSettings();
+    }
+
+    async function clearChatHistory() {
+        if (confirm("정말 대화 내용을 지우시겠습니까?\n(真的要清空聊天记录吗？)")) {
+            userData.messages = [];
+            pendingMedia = null;
+            pendingSticker = null;
+            pendingQuote = null; 
+            document.getElementById('chat-input').value = '';
+            document.getElementById('chat-input').placeholder = "팬들의 닉네임 @@@를 불러 주세요 :)";
+            checkInputState();
+            await saveUserData();
+            renderMessages();
+            closeChatSettings();
+        }
     }
 
     function applyChatSettings() {
