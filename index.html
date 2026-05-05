@@ -574,9 +574,9 @@
         .message-right {
             background-color: var(--theme-color); 
             color: #ffffff;
-            padding: 7px 13px;        
+            padding: 8px 14px;        
             border-radius: 22px 22px 4px 22px;
-            font-size: 13px;          
+            font-size: 14px;          
             max-width: 100%;
             word-break: break-word;
             line-height: 1.4;
@@ -591,24 +591,24 @@
             border-radius: 12px;
         }
 
-        /* 直播记录气泡样式 */
+        /* 直播记录气泡样式 (复用普通气泡外观) */
         .live-record-bubble {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            padding: 10px 18px !important;
-            border-radius: 24px !important;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+            background-color: var(--theme-color) !important;
+            color: #ffffff !important;
+            padding: 8px 14px !important;
+            border-radius: 22px 22px 4px 22px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
             display: flex !important;
             flex-direction: row !important;
             align-items: center !important;
-            gap: 12px !important;
-            font-size: 16px !important;
+            gap: 8px !important;
+            font-size: 14px !important;
             font-weight: 500 !important;
         }
         .live-phone-icon {
-            width: 28px;
-            height: 28px;
-            background-color: #f2f2f2;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.25);
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -616,9 +616,9 @@
             flex-shrink: 0;
         }
         .live-phone-icon svg {
-            width: 14px;
-            height: 14px;
-            fill: #333;
+            width: 12px;
+            height: 12px;
+            fill: #ffffff;
         }
 
         .batch-generate-btn {
@@ -1158,6 +1158,18 @@
             display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0;
         }
         .live-send-btn svg { stroke: var(--theme-color); width: 18px; height: 18px; }
+
+        /* 直播结束过渡页 */
+        .live-end-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+            z-index: 400; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            color: #fff; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        .live-end-screen.show { opacity: 1; pointer-events: auto; }
+        .live-end-text { font-size: 26px; font-weight: bold; margin-bottom: 12px; letter-spacing: 1px; }
+        .live-end-sub { font-size: 15px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
@@ -1309,7 +1321,6 @@
                 </div>
             </div>
 
-            <!-- 新增：数据备份与导入 -->
             <div class="settings-section">
                 <div class="settings-section-title">Data Backup (数据备份)</div>
                 <div class="settings-row" style="border-bottom: none; gap: 10px;">
@@ -1494,6 +1505,12 @@
             <div class="live-send-btn" onclick="sendLiveMessage()">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
             </div>
+        </div>
+
+        <!-- 直播结束过渡页 -->
+        <div id="live-end-screen" class="live-end-screen">
+            <div class="live-end-text">방송 종료</div>
+            <div class="live-end-sub">直播已结束</div>
         </div>
     </div>
     
@@ -2340,11 +2357,11 @@
                 const bubble = document.createElement('div');
                 
                 if (msg.isLiveRecord) {
-                    // 直播记录特殊气泡样式
+                    // 直播记录特殊气泡样式 (复用 message-right 的颜色和圆角)
                     bubble.className = 'live-record-bubble';
                     bubble.innerHTML = `
                         <div class="live-phone-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
                         </div>
                         <div>${msg.text}</div>
                     `;
@@ -2824,7 +2841,7 @@ ${aiContext}
     // --- 直播间逻辑 ---
     let liveCommentQueue = [];
     let liveCommentTimer = null;
-    let liveStartTime = 0; // 记录直播开始时间
+    let liveStartTime = 0; 
 
     function getBrightnessFromHex(hex) {
         let r = 0, g = 0, b = 0;
@@ -2885,30 +2902,39 @@ ${aiContext}
         liveCommentQueue = [];
         
         liveStartTime = Date.now();
-        sendLiveRecordMessage("bubble LIVE"); // 发送开始气泡
+        sendLiveRecordMessage("bubble LIVE"); 
 
         addLiveIdolAction("直播已开启，粉丝正在赶来...");
     }
 
     function closeLiveRoom() {
-        document.getElementById('live-room').classList.remove('show');
-        clearInterval(liveCommentTimer);
-        liveCommentQueue = [];
-
-        if (liveStartTime > 0) {
-            let durationMs = Date.now() - liveStartTime;
-            let totalSeconds = Math.floor(durationMs / 1000);
-            let hours = Math.floor(totalSeconds / 3600);
-            let minutes = Math.floor((totalSeconds % 3600) / 60);
-            let seconds = totalSeconds % 60;
-            let timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        if (confirm("정말 방송을 종료하시겠습니까?\n(是否要关闭直播？)")) {
+            clearInterval(liveCommentTimer);
+            liveCommentQueue = [];
             
-            sendLiveRecordMessage(timeStr); // 发送结束时长气泡
-            liveStartTime = 0;
+            // 显示结束画面
+            document.getElementById('live-end-screen').classList.add('show');
+            
+            setTimeout(() => {
+                // 3秒后真正关闭
+                document.getElementById('live-room').classList.remove('show');
+                document.getElementById('live-end-screen').classList.remove('show');
+                
+                if (liveStartTime > 0) {
+                    let durationMs = Date.now() - liveStartTime;
+                    let totalSeconds = Math.floor(durationMs / 1000);
+                    let hours = Math.floor(totalSeconds / 3600);
+                    let minutes = Math.floor((totalSeconds % 3600) / 60);
+                    let seconds = totalSeconds % 60;
+                    let timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    
+                    sendLiveRecordMessage(timeStr);
+                    liveStartTime = 0;
+                }
+            }, 3000);
         }
     }
 
-    // 专属的直播记录气泡发送函数
     async function sendLiveRecordMessage(text) {
         if (!userData.messages) userData.messages = [];
         const newMessage = {
@@ -2917,7 +2943,7 @@ ${aiContext}
             isLiveRecord: true,
             text: text,
             time: new Date().toISOString(),
-            hasGeneratedReplies: true // 直播记录不需要触发AI回复
+            hasGeneratedReplies: true 
         };
         userData.messages.push(newMessage);
         await saveUserData();
@@ -3032,16 +3058,16 @@ MBTI：${userData.persona.mbti || '无'}
 
 任务：生成 20 条极具“活人感”、有梗、符合饭圈文化的直播间实时弹幕。
 要求：
-1. 长度适中 有长有短 有梗 有意思
-2. 语言混合：韩语(30%)，中文(30%)，英文(20%)，其他语言(20%)
-3. 内容分布：
-   - 60% 狂热粉丝反应（啊啊啊、疯了、救命、귀여워、미쳤다、slay、尊嘟假嘟）。
-   - 20% 结合爱豆【人设信息】的玩梗或吐槽（比如提到TA的MBTI特质、习惯动作、或者团队梗）。
-   - 10% 粉丝提问（吃饭了吗？旁边是谁？剧透一下吧）。
-   - 10% Anti/黑粉或路人（真无聊、这人在干嘛、长得好普、赶紧下播吧、吵死了）。
-4. 语气要非常像真正的互联网网民，多用标点符号（！！！，？？，...，ㅠㅠ，ㅋㅋ）。
+1. 紧扣行为：必须根据爱豆刚刚的动作或话语给出【对应的】反应，不要说无关的话！
+2. 称呼限制：绝对禁止使用“Queen”、“King”、“陛下”等奇怪/夸张的称呼。可以叫名字、欧巴、姐姐、宝宝、老婆、老公等正常的饭圈称呼。
+3. 语言与翻译：韩语(40%)，中文(40%)，英文(20%)。如果是韩语或英语，必须在括号里附带中文翻译！例如："귀여워ㅠㅠ (好可爱ㅠㅠ)" 或 "so cute (太可爱了)"。
+4. 内容分布：
+   - 60% 针对刚才行为的狂热反应。
+   - 20% 结合人设的玩梗。
+   - 10% 相关提问。
+   - 10% 挑刺/黑粉/路人迷惑发言。
 5. 必须严格只返回 JSON 数组格式，内部为字符串，不要任何 Markdown 标记，不要多余解释！
-示例：["啊啊啊啊救命", "귀여워ㅠㅠㅠ", "omg", "又在发疯了kkk", "노잼", "미쳤다 진짜", "今天也是ENFP爆发的一天", "빨리 꺼라"]`;
+示例：["啊啊啊啊救命", "귀여워ㅠㅠㅠ (好可爱ㅠㅠㅠ)", "omg (天哪)", "又在发疯了kkk", "노잼 (真无聊)", "미쳤다 진짜 (真是疯了)"]`;
 
         try {
             const baseUrl = url.trim().replace(/\/+$/, '');
