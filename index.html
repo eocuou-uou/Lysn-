@@ -1023,6 +1023,7 @@
         .action-menu-overlay.show { opacity: 1; pointer-events: auto; }
         .action-menu-content {
             background: #fff; border-radius: 20px 20px 0 0; padding: 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .action-menu-overlay.show .action-menu-content { transform: translateY(0); }
@@ -1035,11 +1036,20 @@
 
         /* 直播间 UI */
         .live-room {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; 
+            height: 100vh; height: 100dvh; /* 修复底部白边，强制全屏 */
             background-color: var(--theme-color);
             background-size: cover; background-position: center;
             z-index: 300; display: flex; flex-direction: column;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            
+            /* 动态颜色变量（会根据背景亮度自动切换） */
+            --live-text-color: #ffffff;
+            --live-text-muted: rgba(255, 255, 255, 0.7);
+            --live-bubble-bg: rgba(0, 0, 0, 0.25);
+            --live-input-bg: rgba(0, 0, 0, 0.3);
+            --live-input-border: rgba(255, 255, 255, 0.2);
+            --live-gradient: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
         }
         .live-room.show { transform: translateY(0); }
         
@@ -1048,63 +1058,77 @@
             z-index: 10;
         }
         .live-icon-btn {
-            width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 50%;
+            width: 32px; height: 32px; background: var(--live-bubble-bg); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(5px);
         }
-        .live-icon-btn svg { stroke: #fff; stroke-width: 2; fill: none; width: 18px; height: 18px; }
+        .live-icon-btn svg { stroke: var(--live-text-color); stroke-width: 2; fill: none; width: 18px; height: 18px; }
 
         .live-profile {
             display: flex; flex-direction: column; align-items: center; margin-top: 20px; z-index: 10;
         }
         .live-avatar {
             width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
-            border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid var(--live-input-border); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .live-name {
-            color: #fff; font-size: 22px; font-weight: 900; margin-top: 15px;
+            color: var(--live-text-color); font-size: 22px; font-weight: 900; margin-top: 15px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;
         }
 
         .live-lysn-watermark {
             position: absolute; bottom: 100px; width: 100%; text-align: center;
-            color: rgba(255,255,255,0.3); font-size: 20px; font-weight: 800; z-index: 1; pointer-events: none;
+            color: var(--live-text-muted); font-size: 20px; font-weight: 800; z-index: 1; pointer-events: none;
         }
 
         .live-comments-area {
-            flex: 1; overflow-y: hidden; padding: 20px; display: flex; flex-direction: column;
+            flex: 1; padding: 20px; display: flex; flex-direction: column;
             justify-content: flex-end; gap: 12px; z-index: 10;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
-            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
+            /* 修复滑动问题 */
+            overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
         }
+        .live-comments-area::-webkit-scrollbar { display: none; }
         
         .live-comment {
-            background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);
+            background: var(--live-bubble-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             padding: 8px 14px; border-radius: 16px; width: fit-content; max-width: 85%;
-            color: #fff; font-size: 14px; display: flex; align-items: flex-start; gap: 8px;
+            color: var(--live-text-color); font-size: 14px; display: flex; align-items: flex-start; gap: 8px;
             animation: slideUpFade 0.4s ease-out forwards;
-            word-break: break-word; line-height: 1.4;
+            word-break: break-word; line-height: 1.4; flex-shrink: 0;
         }
-        .live-comment.system { background: rgba(255,255,255,0.2); color: #fff; font-weight: bold; }
-        .live-comment-user { font-weight: bold; color: rgba(255,255,255,0.7); font-size: 12px; white-space: nowrap; margin-top: 2px;}
+        .live-comment-user { font-weight: bold; color: var(--live-text-muted); font-size: 12px; white-space: nowrap; margin-top: 2px;}
         
+        /* 爱豆专属行动文本样式 */
+        .live-comment.idol-action {
+            background: var(--theme-color); 
+            color: #fff; /* 强制白色保证对比度 */
+            font-weight: bold;
+            border-left: 4px solid rgba(255,255,255,0.8);
+            border-radius: 8px 16px 16px 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
         @keyframes slideUpFade {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .live-input-container {
-            padding: 10px 20px; padding-bottom: max(15px, env(safe-area-inset-bottom));
-            background: linear-gradient(to top, rgba(0,0,0,0.4), transparent); z-index: 10;
+            padding: 10px 20px; 
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* 彻底修复底部白边 */
+            background: var(--live-gradient); z-index: 10;
             display: flex; gap: 10px; align-items: center;
         }
         .live-input-container input {
-            flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px; padding: 10px 16px; color: #fff; font-size: 14px; outline: none;
+            flex: 1; background: var(--live-input-bg); border: 1px solid var(--live-input-border);
+            border-radius: 20px; padding: 10px 16px; color: var(--live-text-color); font-size: 14px; outline: none;
+            backdrop-filter: blur(5px);
         }
-        .live-input-container input::placeholder { color: rgba(255,255,255,0.6); }
+        .live-input-container input::placeholder { color: var(--live-text-muted); }
         .live-send-btn {
-            width: 36px; height: 36px; background: #fff; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            width: 36px; height: 36px; background: var(--live-text-color); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0;
         }
         .live-send-btn svg { stroke: var(--theme-color); width: 18px; height: 18px; }
     </style>
@@ -1534,7 +1558,7 @@
         messages: [],
         stickers: [],
         chatBg: '',     
-        liveBg: '', // 新增：直播间背景
+        liveBg: '', 
         customFont: null,
         themeColor: '#9F85F1' 
     };
@@ -2706,13 +2730,68 @@ ${aiContext}
     let liveCommentQueue = [];
     let liveCommentTimer = null;
 
+    // 辅助函数：根据 Hex 计算亮度
+    function getBrightnessFromHex(hex) {
+        let r = 0, g = 0, b = 0;
+        if (hex.length === 4) {
+            r = parseInt(hex[1] + hex[1], 16);
+            g = parseInt(hex[2] + hex[2], 16);
+            b = parseInt(hex[3] + hex[3], 16);
+        } else if (hex.length === 7) {
+            r = parseInt(hex.substring(1, 3), 16);
+            g = parseInt(hex.substring(3, 5), 16);
+            b = parseInt(hex.substring(5, 7), 16);
+        }
+        return (r * 299 + g * 587 + b * 114) / 1000;
+    }
+
+    // 辅助函数：根据图片计算平均亮度
+    function getBrightnessFromImage(src, callback) {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width; canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let r, g, b, avg, colorSum = 0;
+            for(let x = 0, len = data.length; x < len; x+=4) {
+                r = data[x]; g = data[x+1]; b = data[x+2];
+                colorSum += Math.floor((r*299 + g*587 + b*114) / 1000);
+            }
+            callback(Math.floor(colorSum / (img.width * img.height)));
+        }
+        img.src = src;
+    }
+
+    // 更新直播间动态颜色（深色/浅色适配）
+    function updateLiveRoomColors(brightness) {
+        const liveRoom = document.getElementById('live-room');
+        if (brightness > 150) { // 背景偏浅，文字变深
+            liveRoom.style.setProperty('--live-text-color', '#111111');
+            liveRoom.style.setProperty('--live-text-muted', 'rgba(0, 0, 0, 0.6)');
+            liveRoom.style.setProperty('--live-bubble-bg', 'rgba(255, 255, 255, 0.5)');
+            liveRoom.style.setProperty('--live-input-bg', 'rgba(255, 255, 255, 0.6)');
+            liveRoom.style.setProperty('--live-input-border', 'rgba(0, 0, 0, 0.15)');
+            liveRoom.style.setProperty('--live-gradient', 'linear-gradient(to top, rgba(255,255,255,0.7), transparent)');
+        } else { // 背景偏深，文字变白
+            liveRoom.style.setProperty('--live-text-color', '#ffffff');
+            liveRoom.style.setProperty('--live-text-muted', 'rgba(255, 255, 255, 0.7)');
+            liveRoom.style.setProperty('--live-bubble-bg', 'rgba(0, 0, 0, 0.25)');
+            liveRoom.style.setProperty('--live-input-bg', 'rgba(0, 0, 0, 0.3)');
+            liveRoom.style.setProperty('--live-input-border', 'rgba(255, 255, 255, 0.2)');
+            liveRoom.style.setProperty('--live-gradient', 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)');
+        }
+    }
+
     function openLiveRoom() {
         document.getElementById('live-room').classList.add('show');
         applyLiveBg();
         document.getElementById('live-comments-area').innerHTML = '';
         liveCommentQueue = [];
         
-        addLiveCommentSystem("直播已开启，粉丝正在赶来...");
+        addLiveIdolAction("直播已开启，粉丝正在赶来...");
     }
 
     function closeLiveRoom() {
@@ -2725,8 +2804,11 @@ ${aiContext}
         const liveRoom = document.getElementById('live-room');
         if (userData.liveBg) {
             liveRoom.style.backgroundImage = `url(${userData.liveBg})`;
+            getBrightnessFromImage(userData.liveBg, updateLiveRoomColors);
         } else {
             liveRoom.style.backgroundImage = 'none';
+            liveRoom.style.backgroundColor = userData.themeColor || '#9F85F1';
+            updateLiveRoomColors(getBrightnessFromHex(userData.themeColor || '#9F85F1'));
         }
     }
 
@@ -2761,13 +2843,14 @@ ${aiContext}
         }
     }
 
-    function addLiveCommentSystem(text) {
+    // 发送爱豆的高亮行动文本
+    function addLiveIdolAction(text) {
         const area = document.getElementById('live-comments-area');
         const div = document.createElement('div');
-        div.className = 'live-comment system';
-        div.innerText = text;
+        div.className = 'live-comment idol-action';
+        div.innerHTML = `<div>📢 <b>${userData.name || '爱豆'}</b>: ${text}</div>`;
         area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
+        setTimeout(() => { area.scrollTop = area.scrollHeight; }, 50);
     }
 
     function appendSingleLiveComment(text) {
@@ -2780,10 +2863,10 @@ ${aiContext}
         
         area.appendChild(div);
         
-        if (area.children.length > 30) {
+        if (area.children.length > 50) {
             area.removeChild(area.firstChild);
         }
-        area.scrollTop = area.scrollHeight;
+        setTimeout(() => { area.scrollTop = area.scrollHeight; }, 50);
     }
 
     function startLiveCommentFlow() {
@@ -2803,7 +2886,7 @@ ${aiContext}
         const text = input.value.trim();
         if (!text) return;
 
-        addLiveCommentSystem(`[爱豆动作/发言]: ${text}`);
+        addLiveIdolAction(text);
         input.value = '';
 
         const url = userData.api.url;
@@ -2811,23 +2894,32 @@ ${aiContext}
         const model = userData.api.model;
 
         if (!url || !key || !model) {
-            addLiveCommentSystem("⚠️ 请先在 MORE 页面配置 API");
+            addLiveIdolAction("⚠️ 请先在 MORE 页面配置 API");
             return;
         }
 
+        // 引入人设信息，增强弹幕活感
         const prompt = `你是一个扮演真实直播间观众的AI群控大脑。你的爱豆正在进行语音/视频直播。
-爱豆刚刚在直播中说/做了："${text}"
+【爱豆人设信息】
+团队：${userData.persona.team || '无'}
+姓名：${userData.persona.realName || '无'}
+MBTI：${userData.persona.mbti || '无'}
+性格与习惯：${userData.persona.personality || '无'}
 
-任务：生成 20 条极具“活人感”的直播间实时弹幕/评论。
+爱豆刚刚在直播中做了或说了："${text}"
+
+任务：生成 20 条极具“活人感”、有梗、符合饭圈文化的直播间实时弹幕。
 要求：
-1. 极度简短：直播弹幕通常只有1-8个词。
-2. 语言混合：韩语为主，夹杂中文和英文。
-3. 内容多样化（非常重要）：
-   - 70% 是狂热粉丝的真实反应（啊啊啊、好可爱、疯了、心空）。
-   - 20% 是粉丝的提问（吃饭了吗？旁边是谁？今天开心吗？）。
-   - 10% 是Anti/黑粉的恶评或路人的迷惑发言（真无聊、别播了、长得好普、这人在干嘛、赶紧下播吧）。
-4. 必须严格只返回 JSON 数组格式，内部为字符串，不要任何 Markdown 标记，不要多余解释！
-示例：["啊啊啊啊", "귀여워ㅠㅠ", "omg", "밥 먹었어요?", "노잼", "미쳤다", "오늘 뭐했어요?", "빨리 꺼라"]`;
+1. 回复需要有梗 有意思 字数3~20字
+2. 语言混合：韩语(30%)，中文(20%)，英文(20%)，日语(20%)。
+3. 内容分布：
+   - 60% 狂热粉丝反应（啊啊啊、疯了、救命、귀여워、미쳤다、slay、尊嘟假嘟）。
+   - 20% 结合爱豆【人设信息】的玩梗或吐槽（比如提到TA的MBTI特质、习惯动作、或者团队梗）。
+   - 10% 粉丝提问（吃饭了吗？旁边是谁？剧透一下吧）。
+   - 10% Anti/黑粉或路人（真无聊、这人在干嘛、长得好普、赶紧下播吧、吵死了）。
+4. 语气要非常像真正的互联网网民，多用标点符号（！！！，？？，...，ㅠㅠ，ㅋㅋ）。
+5. 必须严格只返回 JSON 数组格式，内部为字符串，不要任何 Markdown 标记，不要多余解释！
+示例：["啊啊啊啊救命", "귀여워ㅠㅠㅠ", "omg", "又在发疯了kkk", "노잼", "미쳤다 진짜", "今天也是ENFP爆发的一天", "빨리 꺼라"]`;
 
         try {
             const baseUrl = url.trim().replace(/\/+$/, '');
@@ -2870,7 +2962,7 @@ ${aiContext}
 
         } catch (error) {
             console.error(error);
-            addLiveCommentSystem("⚠️ 弹幕生成失败，请检查网络或API");
+            addLiveIdolAction("⚠️ 弹幕生成失败，请检查网络或API");
         }
     }
 
