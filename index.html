@@ -10,20 +10,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg">
-    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Lysn%20idol%20ver.%22%2C%22short_name%22%3A%22Lysn%20idol%20ver.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%23ffffff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn.phototourl.com%2Fuploads%2F2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%5D%7D">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Lysn idol ver.","short_name":"Lysn idol ver.","display":"standalone","start_url":".","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
 
     <title>Lysn idol ver.</title>
-
-    <script>
-        (function() {
-            const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-            if (isStandalone) {
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                document.documentElement.classList.add(isIOS ? 'ios-pwa' : 'android-pwa');
-            }
-        })();
-    </script>
-
     <style id="dynamic-font"></style>
     <style>
         :root {
@@ -38,15 +27,14 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 修复：将底层背景色改为白色，彻底消除全面屏底部的黑边 */
         html, body {
-            width: 100vw;
-            height: 100dvh;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #ffffff; 
+            background-color: #f5f5f5;
             display: flex;
             justify-content: center;
         }
@@ -55,7 +43,7 @@
             width: 100%;
             max-width: 400px;
             background-color: #ffffff;
-            height: 100dvh;
+            height: 100%;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -63,36 +51,19 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
-        .header, .sub-page .header, .chat-room .header, .replies-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end; 
-            padding: 10px 20px 12px 20px;
-            background-color: #fff;
-            z-index: 20;
-            flex-shrink: 0;
-            min-height: 60px;
-            padding-top: calc(10px + env(safe-area-inset-top)); 
-        }
-
-        .sub-page .header, .chat-room .header, .replies-header {
-            border-bottom: 1px solid #f5f5f5;
-        }
-
-        html.ios-pwa .header, 
-        html.ios-pwa .sub-page .header, 
-        html.ios-pwa .chat-room .header, 
-        html.ios-pwa .replies-header {
-            padding-top: calc(max(24px, env(safe-area-inset-top)) + 12px) !important;
-            min-height: calc(max(24px, env(safe-area-inset-top)) + 50px) !important;
-        }
-
-        html.android-pwa .header, 
-        html.android-pwa .sub-page .header, 
-        html.android-pwa .chat-room .header, 
-        html.android-pwa .replies-header {
-            padding-top: calc(12px + env(safe-area-inset-top)) !important;
-            min-height: calc(55px + env(safe-area-inset-top)) !important;
+        @media (display-mode: standalone) {
+            .header, .sub-page .header, .chat-room .header, .replies-header {
+                padding-top: calc(env(safe-area-inset-top) + 10px) !important;
+                height: auto !important;
+                min-height: calc(55px + env(safe-area-inset-top));
+            }
+            .bottom-nav {
+                padding-bottom: env(safe-area-inset-bottom) !important;
+                height: calc(75px + env(safe-area-inset-bottom)) !important;
+            }
+            .content {
+                padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+            }
         }
 
         .splash-screen {
@@ -112,30 +83,28 @@
         .splash-screen.hide { opacity: 0; }
         .splash-screen.removed { display: none; }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 15px 20px 10px;
+            height: 60px;
+            background-color: #fff;
+            z-index: 20;
+        }
+
         .header-title {
             font-size: 26px;
             font-weight: 900;
             letter-spacing: -0.5px;
             color: #000;
-            margin-bottom: -2px;
-        }
-
-        .sub-page .header-title, .chat-room .header-title {
-            font-size: 17px;
-            margin-bottom: 2px;
-        }
-
-        .replies-header-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 2px;
         }
 
         .header-icons {
             display: flex;
             gap: 16px;
+            margin-bottom: 4px;
             align-items: center;
-            margin-bottom: 2px;
         }
 
         .header-icons svg {
@@ -151,7 +120,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 0 20px;
-            padding-bottom: calc(90px + env(safe-area-inset-bottom));
+            padding-bottom: 90px;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -326,17 +295,15 @@
             position: absolute;
             bottom: 0;
             width: 100%;
+            height: 75px;
             background-color: #ffffff;
             border-top: 1px solid #f0f0f0;
             display: flex;
             justify-content: space-around;
-            align-items: flex-start; 
-            padding-top: 12px; 
+            align-items: center;
             border-radius: 24px 24px 0 0;
             box-shadow: 0 -2px 15px rgba(0,0,0,0.03);
             z-index: 10;
-            padding-bottom: env(safe-area-inset-bottom);
-            height: calc(65px + env(safe-area-inset-bottom));
         }
 
         .nav-item {
@@ -396,6 +363,19 @@
         }
 
         .sub-page.show { transform: translateX(0); }
+
+        .sub-page .header {
+            border-bottom: 1px solid #f5f5f5;
+            height: 55px;
+            padding: 0 20px;
+            align-items: center;
+        }
+
+        .sub-page .header-title {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
 
         .save-btn {
             font-size: 15px;
@@ -515,6 +495,16 @@
         
         .chat-room.show { transform: translateX(0); }
 
+        .chat-room .header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            height: 55px;
+            padding: 0 20px;
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+        }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -555,7 +545,8 @@
             font-size: 11px;
             color: #999;
             margin-bottom: 4px;
-            white-space: nowrap;
+            margin-right: 2px;
+            flex-shrink: 0;
         }
 
         .quote-bubble {
@@ -839,7 +830,16 @@
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .replies-page.show { transform: translateX(0); }
-        
+        .replies-header {
+            height: 55px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .replies-header-title { font-size: 16px; font-weight: bold; }
         .replies-content {
             flex: 1;
             overflow-y: auto;
@@ -847,6 +847,7 @@
             -webkit-overflow-scrolling: touch;
         }
         .replies-footer {
+            height: 60px;
             background: var(--theme-color);
             display: flex;
             justify-content: center;
@@ -856,7 +857,6 @@
             font-weight: bold;
             cursor: pointer;
             padding-bottom: env(safe-area-inset-bottom);
-            height: calc(60px + env(safe-area-inset-bottom));
         }
         
         .reply-item {
@@ -1012,6 +1012,101 @@
             border-color: var(--theme-color);
             background: #fff;
         }
+
+        /* 附件菜单 (点击+号弹出) */
+        .action-menu-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 250;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .action-menu-overlay.show { opacity: 1; pointer-events: auto; }
+        .action-menu-content {
+            background: #fff; border-radius: 20px 20px 0 0; padding: 20px;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .action-menu-overlay.show .action-menu-content { transform: translateY(0); }
+        .action-item {
+            padding: 18px 0; text-align: center; font-size: 16px; font-weight: 600;
+            border-bottom: 1px solid #f0f0f0; cursor: pointer; color: #333;
+        }
+        .action-item:last-child { border-bottom: none; }
+        .action-item.cancel { color: #999; margin-top: 10px; }
+
+        /* 直播间 UI */
+        .live-room {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--theme-color);
+            background-size: cover; background-position: center;
+            z-index: 300; display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .live-room.show { transform: translateY(0); }
+        
+        .live-header {
+            display: flex; justify-content: space-between; padding: max(20px, env(safe-area-inset-top)) 20px 10px;
+            z-index: 10;
+        }
+        .live-icon-btn {
+            width: 32px; height: 32px; background: rgba(0,0,0,0.2); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(5px);
+        }
+        .live-icon-btn svg { stroke: #fff; stroke-width: 2; fill: none; width: 18px; height: 18px; }
+
+        .live-profile {
+            display: flex; flex-direction: column; align-items: center; margin-top: 20px; z-index: 10;
+        }
+        .live-avatar {
+            width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .live-name {
+            color: #fff; font-size: 22px; font-weight: 900; margin-top: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;
+        }
+
+        .live-lysn-watermark {
+            position: absolute; bottom: 100px; width: 100%; text-align: center;
+            color: rgba(255,255,255,0.3); font-size: 20px; font-weight: 800; z-index: 1; pointer-events: none;
+        }
+
+        .live-comments-area {
+            flex: 1; overflow-y: hidden; padding: 20px; display: flex; flex-direction: column;
+            justify-content: flex-end; gap: 12px; z-index: 10;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 100%);
+        }
+        
+        .live-comment {
+            background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);
+            padding: 8px 14px; border-radius: 16px; width: fit-content; max-width: 85%;
+            color: #fff; font-size: 14px; display: flex; align-items: flex-start; gap: 8px;
+            animation: slideUpFade 0.4s ease-out forwards;
+            word-break: break-word; line-height: 1.4;
+        }
+        .live-comment.system { background: rgba(255,255,255,0.2); color: #fff; font-weight: bold; }
+        .live-comment-user { font-weight: bold; color: rgba(255,255,255,0.7); font-size: 12px; white-space: nowrap; margin-top: 2px;}
+        
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .live-input-container {
+            padding: 10px 20px; padding-bottom: max(15px, env(safe-area-inset-bottom));
+            background: linear-gradient(to top, rgba(0,0,0,0.4), transparent); z-index: 10;
+            display: flex; gap: 10px; align-items: center;
+        }
+        .live-input-container input {
+            flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px; padding: 10px 16px; color: #fff; font-size: 14px; outline: none;
+        }
+        .live-input-container input::placeholder { color: rgba(255,255,255,0.6); }
+        .live-send-btn {
+            width: 36px; height: 36px; background: #fff; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+        }
+        .live-send-btn svg { stroke: var(--theme-color); width: 18px; height: 18px; }
     </style>
 </head>
 <body>
@@ -1129,10 +1224,6 @@
                     <input type="text" id="set-realname" placeholder="输入本名">
                 </div>
                 <div class="settings-row">
-                    <label>性别</label>
-                    <input type="text" id="set-gender" placeholder="例如：男 / 女">
-                </div>
-                <div class="settings-row">
                     <label>生日</label>
                     <input type="text" id="set-birthday" placeholder="YYYY-MM-DD">
                 </div>
@@ -1166,15 +1257,6 @@
                     </select>
                 </div>
             </div>
-
-            <div class="settings-section" style="margin-bottom: 30px;">
-                <div class="settings-section-title">Data Management (데이터 관리)</div>
-                <div class="settings-row" style="justify-content: space-between; border-bottom: none;">
-                    <button class="btn-pull" onclick="exportData()" style="width: 48%; background: var(--theme-color); color: #fff;">导出备份 (Export)</button>
-                    <button class="btn-pull" onclick="document.getElementById('backup-upload').click()" style="width: 48%;">导入备份 (Import)</button>
-                </div>
-            </div>
-            <input type="file" id="backup-upload" accept=".json" style="display:none;" onchange="handleImportData(event)">
         </div>
     </div>
 
@@ -1199,7 +1281,7 @@
         <div class="chat-input-area">
             <input type="file" id="chat-media-upload" accept="image/*,video/*" style="display:none;" onchange="handleMediaSelect(event)">
             
-            <div class="plus-btn" onclick="document.getElementById('chat-media-upload').click()">
+            <div class="plus-btn" onclick="openActionMenu()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1239,6 +1321,9 @@
             <div class="menu-item" style="padding: 15px 20px;" onclick="document.getElementById('bg-upload').click()">
                 <span class="menu-text">배경화면 설정 (设置背景)</span>
             </div>
+            <div class="menu-item" style="padding: 15px 20px;" onclick="document.getElementById('font-upload').click()">
+                <span class="menu-text">글꼴 설정 (设置字体)</span>
+            </div>
             <div class="menu-item" style="padding: 15px 20px;" onclick="resetChatSettings()">
                 <span class="menu-text">기본값으로 초기화 (恢复默认)</span>
             </div>
@@ -1249,6 +1334,7 @@
     </div>
     
     <input type="file" id="bg-upload" accept="image/*" style="display:none;" onchange="handleBgUpload(event)">
+    <input type="file" id="font-upload" accept=".ttf,.otf,.woff,.woff2" style="display:none;" onchange="handleFontUpload(event)">
 
     <div id="sticker-panel" class="sticker-panel">
         <div class="sticker-panel-header" id="sticker-header-normal">
@@ -1302,24 +1388,59 @@
             <div style="font-weight: bold; font-size: 18px;">:</div>
         </div>
         <div class="replies-content" id="replies-content"></div>
+        <div class="replies-footer" onclick="closeRepliesPage()">
+            채팅방으로 돌아가기
+        </div>
     </div>
 
     <div id="loading-overlay" class="loading-overlay">
         <span id="loading-text">粉丝正在疯狂回复中...</span>
     </div>
 
+    <!-- 附件菜单 -->
+    <div id="action-menu" class="action-menu-overlay" onclick="closeActionMenu()">
+        <div class="action-menu-content" onclick="event.stopPropagation()">
+            <div class="action-item" onclick="document.getElementById('chat-media-upload').click(); closeActionMenu();">发送照片/视频</div>
+            <div class="action-item" style="color: var(--theme-color);" onclick="openLiveRoom(); closeActionMenu();">开启语音直播 (Voice Live)</div>
+            <div class="action-item cancel" onclick="closeActionMenu()">取消</div>
+        </div>
+    </div>
+
+    <!-- 直播间 -->
+    <div id="live-room" class="live-room">
+        <div class="live-header">
+            <div class="live-icon-btn" onclick="closeLiveRoom()">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <div class="live-icon-btn" onclick="document.getElementById('live-bg-upload').click()">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            </div>
+        </div>
+        
+        <div class="live-profile">
+            <img src="" class="live-avatar global-avatar" alt="">
+            <div class="live-name global-name"></div>
+        </div>
+
+        <div class="live-lysn-watermark">Lysn</div>
+
+        <div class="live-comments-area" id="live-comments-area">
+            <!-- 评论将在这里生成 -->
+        </div>
+
+        <div class="live-input-container">
+            <input type="text" id="live-input" placeholder="输入你在直播中的动作或说的话..." onkeydown="if(event.key === 'Enter' && !event.isComposing) { event.preventDefault(); sendLiveMessage(); }">
+            <div class="live-send-btn" onclick="sendLiveMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+            </div>
+        </div>
+    </div>
+    
+    <input type="file" id="live-bg-upload" accept="image/*" style="display:none;" onchange="handleLiveBgUpload(event)">
+
 </div>
 
 <script>
-    function readFileAsBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(new Error("读取文件失败"));
-            reader.readAsDataURL(file);
-        });
-    }
-
     const fetchWithTimeout = async (resource, options = {}) => {
         const { timeout = 30000 } = options;
         const controller = new AbortController();
@@ -1379,10 +1500,14 @@
         set(key, value) {
             if (!this.isSupported || !this.db) {
                 try {
-                    localStorage.setItem('bubble_' + key, JSON.stringify(value));
+                    let valToStore = { ...value };
+                    if (valToStore.customFont instanceof File || valToStore.customFont instanceof Blob) {
+                        valToStore.customFont = null; 
+                    }
+                    localStorage.setItem('bubble_' + key, JSON.stringify(valToStore));
                 } catch (e) {
                     if (e.name === 'QuotaExceededError') {
-                        alert("浏览器存储空间不足！请尝试清理手机空间或删除多余的聊天记录。");
+                        alert("浏览器存储空间不足！如果您刚刚设置了超大字体，请尝试恢复默认或清理空间。");
                     }
                 }
                 return Promise.resolve();
@@ -1404,11 +1529,13 @@
         name: '',
         avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f0f0f0"/%3E%3Ctext x="50" y="55" font-size="12" text-anchor="middle" fill="%23999"%3E📷%3C/text%3E%3C/svg%3E',
         status: '',
-        persona: { team: '', realName: '', birthday: '', mbti: '', personality: '', gender: '' },
+        persona: { team: '', realName: '', birthday: '', mbti: '', personality: '' },
         api: { url: '', key: '', model: '' },
         messages: [],
         stickers: [],
         chatBg: '',     
+        liveBg: '', // 新增：直播间背景
+        customFont: null,
         themeColor: '#9F85F1' 
     };
 
@@ -1417,6 +1544,7 @@
     let pendingQuote = null; 
     let isStickerDeleteMode = false;
     let selectedStickersToDelete = new Set();
+    let currentFontUrl = null; 
 
     function showLoading(text) {
         document.getElementById('loading-text').innerText = text;
@@ -1425,89 +1553,6 @@
 
     function hideLoading() {
         document.getElementById('loading-overlay').classList.remove('show');
-    }
-
-    function formatTime(isoString) {
-        if (!isoString) return '';
-        const d = new Date(isoString);
-        const hours = d.getHours().toString().padStart(2, '0');
-        const mins = d.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${mins}`;
-    }
-
-    function exportData() {
-        try {
-            const dataStr = JSON.stringify(userData);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const date = new Date();
-            const dateStr = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}`;
-            a.download = `lysn_backup_${dateStr}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        } catch (e) {
-            alert("导出失败，可能是聊天记录（视频/图片）过大超出了浏览器内存限制。请尝试删除一些大视频后重试。");
-        }
-    }
-
-    async function handleImportData(event) {
-        const file = event.target.files[0];
-        event.target.value = '';
-        if (!file) return;
-
-        showLoading("正在恢复数据...");
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                if (typeof importedData !== 'object' || !importedData.messages) {
-                    throw new Error("无效的备份文件格式");
-                }
-                
-                userData = { ...userData, ...importedData };
-                userData.messages = userData.messages || [];
-                userData.stickers = userData.stickers || [];
-                userData.persona = userData.persona || {};
-                userData.api = userData.api || {};
-                if (!userData.themeColor) userData.themeColor = '#9F85F1';
-
-                await saveUserData();
-                
-                document.documentElement.style.setProperty('--theme-color', userData.themeColor);
-                applyChatSettings();
-                
-                document.getElementById('set-team').value = userData.persona.team || '';
-                document.getElementById('set-realname').value = userData.persona.realName || '';
-                document.getElementById('set-gender').value = userData.persona.gender || '';
-                document.getElementById('set-birthday').value = userData.persona.birthday || '';
-                document.getElementById('set-mbti').value = userData.persona.mbti || '';
-                document.getElementById('set-personality').value = userData.persona.personality || '';
-                document.getElementById('set-apiurl').value = userData.api.url || '';
-                document.getElementById('set-apikey').value = userData.api.key || '';
-                if (userData.api.model) {
-                    document.getElementById('set-model').innerHTML = `<option value="${userData.api.model}">${userData.api.model}</option>`;
-                }
-                updateThemeSelectionUI();
-
-                renderMessages();
-                renderStickerGrid();
-
-                hideLoading();
-                alert("导入成功！数据已恢复。");
-            } catch (err) {
-                hideLoading();
-                alert("导入失败: " + err.message);
-            }
-        };
-        reader.onerror = () => {
-            hideLoading();
-            alert("读取文件失败");
-        };
-        reader.readAsText(file);
     }
 
     async function translateText(text) {
@@ -1718,44 +1763,11 @@
         const statusInput = document.getElementById('status-text');
         if (statusInput) statusInput.value = userData.status;
         
-        const genderInput = document.getElementById('set-gender');
-        if (genderInput && userData.persona) {
-            genderInput.value = userData.persona.gender || '';
-        }
-
         updateAllUI();
         applyChatSettings(); 
     }
 
-    function compressImage(file, maxWidth = 1080, maxHeight = 1920, quality = 0.8) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    let width = img.width, height = img.height;
-                    if (width > height) {
-                        if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
-                    } else {
-                        if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; }
-                    }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-                img.onerror = () => reject(new Error("图片解码失败"));
-                img.src = e.target.result;
-            };
-            reader.onerror = () => reject(new Error("文件读取失败"));
-            reader.readAsDataURL(file);
-        });
-    }
-
-    async function handleAvatarUpload(event) {
-        const file = event.target ? event.target.files[0] : event;
-        if (event.target) event.target.value = '';
+    async function handleAvatarUpload(file) {
         if (!file) return;
         if (!file.type.startsWith('image/')) {
             alert("请选择图片文件作为头像！");
@@ -1764,12 +1776,25 @@
         const moreAvatar = document.getElementById('more-avatar-img');
         if (moreAvatar) moreAvatar.style.opacity = '0.5';
         try {
-            userData.avatar = await compressImage(file, 400, 400, 0.8);
-            await saveUserData();
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > 400) { h = h * (400 / w); w = 400; }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    userData.avatar = canvas.toDataURL('image/jpeg', 0.7);
+                    await saveUserData();
+                    if (moreAvatar) moreAvatar.style.opacity = '1';
+                };
+            };
+            reader.readAsDataURL(file);
         } catch (err) {
             console.error('头像处理失败', err);
-            alert("头像上传失败: " + err.message);
-        } finally {
             if (moreAvatar) moreAvatar.style.opacity = '1';
         }
     }
@@ -1809,14 +1834,48 @@
         }
         
         showLoading("正在处理背景，请稍候...");
+        
         try {
-            userData.chatBg = await compressImage(file, 1080, 1920, 0.8);
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > 1080) { h = h * (1080 / w); w = 1080; }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    userData.chatBg = canvas.toDataURL('image/jpeg', 0.8);
+                    await saveUserData();
+                    applyChatSettings();
+                    closeChatSettings();
+                    hideLoading();
+                };
+            };
+            reader.readAsDataURL(file);
+        } catch (e) {
+            alert("背景设置失败");
+            hideLoading();
+        }
+    }
+
+    async function handleFontUpload(event) {
+        const file = event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+        
+        showLoading("正在加载字体，请稍候...");
+
+        userData.customFont = file; 
+        try {
             await saveUserData();
             applyChatSettings();
             closeChatSettings();
-        } catch (e) {
-            console.error("背景设置失败", e);
-            alert("背景设置失败: " + e.message);
+        } catch (err) {
+            alert("保存字体失败，可能是超出了浏览器存储限制。");
+            applyCustomFont(userData.customFont); 
         } finally {
             hideLoading();
         }
@@ -1824,6 +1883,7 @@
 
     async function resetChatSettings() {
         userData.chatBg = '';
+        userData.customFont = null;
         await saveUserData();
         applyChatSettings();
         closeChatSettings();
@@ -1852,6 +1912,37 @@
         } else {
             chatRoom.style.backgroundImage = 'none';
             chatRoom.style.backgroundColor = '#EEEEEE';
+        }
+        applyCustomFont(userData.customFont);
+    }
+
+    function applyCustomFont(fontData) {
+        const styleTag = document.getElementById('dynamic-font');
+        if (!fontData) {
+            styleTag.innerHTML = '';
+            if (currentFontUrl) { URL.revokeObjectURL(currentFontUrl); currentFontUrl = null; }
+            return;
+        }
+
+        let url = '';
+        if (typeof fontData === 'string') {
+            url = fontData;
+        } else if (fontData instanceof Blob || fontData instanceof File) {
+            if (currentFontUrl) URL.revokeObjectURL(currentFontUrl);
+            currentFontUrl = URL.createObjectURL(fontData);
+            url = currentFontUrl;
+        }
+
+        if (url) {
+            styleTag.innerHTML = `
+                @font-face {
+                    font-family: 'BubbleCustomFont';
+                    src: url('${url}');
+                }
+                * {
+                    font-family: 'BubbleCustomFont', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+                }
+            `;
         }
     }
 
@@ -2000,7 +2091,7 @@
         closeAddStickerModal();
     }
 
-    async function handleMediaSelect(event) {
+    function handleMediaSelect(event) {
         const file = event.target.files[0];
         event.target.value = ''; 
         if (!file) return;
@@ -2011,48 +2102,27 @@
         }
 
         const isVideo = file.type.startsWith('video/');
-        const isGif = file.type === 'image/gif';
-        
         const desc = prompt("请输入这段照片/视频的文字描述（用于让粉丝AI理解内容）：\n(发送后屏幕显示照片，但AI会根据此描述回复)");
-        if (desc === null) return;
-
-        showLoading("处理中...");
-        try {
-            let mediaUrl = '';
-            
-            if (isVideo || isGif) {
-                mediaUrl = await readFileAsBase64(file);
-            } else if (file.type.startsWith('image/')) {
-                mediaUrl = await compressImage(file, 1080, 1920, 0.8);
-            } else {
-                throw new Error("不支持的文件格式");
-            }
-
-            pendingMedia = {
-                url: mediaUrl,
-                type: isVideo ? 'video' : 'image',
-                desc: desc.trim() || "一张照片/视频"
+        
+        if (desc !== null) { 
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pendingMedia = {
+                    url: e.target.result,
+                    type: isVideo ? 'video' : 'image',
+                    desc: desc.trim() || "一张照片/视频"
+                };
+                document.getElementById('chat-input').placeholder = "[已添加" + (isVideo ? "视频" : "照片") + "] " + document.getElementById('chat-input').placeholder.replace(/\[已添加.*?\] /g, '');
+                checkInputState();
             };
-            
-            let currentPlaceholder = document.getElementById('chat-input').placeholder;
-            document.getElementById('chat-input').placeholder = "[已添加" + (isVideo ? "视频" : "照片") + "] " + currentPlaceholder.replace(/\[已添加.*?\] /g, '');
-            checkInputState();
-
-        } catch (err) {
-            console.error("处理媒体文件出错:", err);
-            alert("处理文件失败: " + err.message);
-        } finally {
-            hideLoading();
+            reader.readAsDataURL(file);
         }
     }
 
     async function saveFirstMessage() {
         const input = document.getElementById('first-msg-input');
         const text = input.value.trim();
-        if (!text) {
-            alert("必须输入内容才能开启聊天哦！");
-            return;
-        }
+        if (!text) return;
         await handleSendMessage(text);
         document.getElementById('first-msg-modal').classList.remove('show');
         input.value = '';
@@ -2154,6 +2224,7 @@
                 baseText: combinedText,
                 hiddenDesc: combinedDesc,
                 hasSticker: hasSticker,
+                time: new Date().toISOString(), // 记录折叠气泡的时间，用于15分钟判定
                 replies: [] 
             });
         }
@@ -2175,6 +2246,8 @@
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'message-wrapper';
+                wrapper.style.alignItems = 'flex-end';
+                wrapper.style.gap = '6px';
                 
                 const retractBtn = document.createElement('div');
                 retractBtn.className = 'retract-btn';
@@ -2182,9 +2255,11 @@
                 retractBtn.onclick = () => retractMessage(msg.id);
                 wrapper.appendChild(retractBtn);
 
+                const timeObj = new Date(msg.time);
+                const timeStr = `${timeObj.getHours().toString().padStart(2, '0')}:${timeObj.getMinutes().toString().padStart(2, '0')}`;
                 const timeDiv = document.createElement('div');
                 timeDiv.className = 'msg-time';
-                timeDiv.innerText = formatTime(msg.time);
+                timeDiv.innerText = timeStr;
                 wrapper.appendChild(timeDiv);
 
                 const rightCol = document.createElement('div');
@@ -2303,27 +2378,30 @@
         try {
             const baseUrl = url.trim().replace(/\/+$/, '');
             
+            // 精准实现 15 分钟记忆关联
             const bubbleIndex = userData.messages.findIndex(m => m.id === bubbleId);
-            const nowTime = new Date();
-            const fifteenMinsAgo = new Date(nowTime.getTime() - 15 * 60000);
-
+            const bubbleTime = new Date(bubbleData.time || Date.now()).getTime();
+            const fifteenMinsMs = 15 * 60 * 1000;
+            
             const historyMsgs = userData.messages.slice(0, bubbleIndex).filter(m => {
-                if (m.type === 'sent') {
-                    const msgTime = new Date(m.time);
-                    return msgTime >= fifteenMinsAgo;
-                }
-                return false;
+                if (!m.time) return false;
+                const msgTime = new Date(m.time).getTime();
+                return (bubbleTime - msgTime) <= fifteenMinsMs;
             });
 
+            const recentHistoryMsgs = historyMsgs.slice(-20);
+            
             let historyStr = "";
-            historyMsgs.forEach(m => {
-                let content = m.text || "";
-                if (m.quoteText) content = `[引用粉丝: "${m.quoteText}"] ` + content;
-                if (m.hiddenDesc) content += ` [发送了图片/视频: ${m.hiddenDesc}]`;
-                if (m.stickerUrl) content += ` [发送了表情包]`;
-                if (content) historyStr += `爱豆: ${content}\n`;
+            recentHistoryMsgs.forEach(m => {
+                if (m.type === 'sent') {
+                    let content = m.text || "";
+                    if (m.quoteText) content = `[引用粉丝: "${m.quoteText}"] ` + content;
+                    if (m.hiddenDesc) content += ` [发送了图片/视频: ${m.hiddenDesc}]`;
+                    if (m.stickerUrl) content += ` [发送了表情包]`;
+                    if (content) historyStr += `爱豆: ${content}\n`;
+                }
             });
-            if (!historyStr) historyStr = "无15分钟内的历史记录";
+            if (!historyStr) historyStr = "无历史记录";
 
             let aiContext = "刚刚连续发送了以下内容：\n";
             if (baseText) aiContext += `- 文字消息：${baseText}\n`;
@@ -2331,25 +2409,25 @@
             if (hasSticker) aiContext += `- 还发送了表情包互动\n`;
 
             const prompt = `你是一个扮演真实狂热粉丝的AI群控大脑。
-你的爱豆（团队：${userData.persona.team || '无'}，姓名：${userData.persona.realName || '无'}，性别：${userData.persona.gender || '无'}，MBTI：${userData.persona.mbti || '无'}，性格：${userData.persona.personality || '无'}）。
+你的爱豆（团队：${userData.persona.team || '无'}，姓名：${userData.persona.realName || '无'}）。注意：仅在必要时才符合他的性格设定，绝不要在回复中生硬地提及他的MBTI或兴趣爱好！
 
-【最近15分钟的聊天记录（粉丝有记忆）】
+【之前的聊天上下文（粉丝有记忆）】
 ${historyStr}
 
 【爱豆刚刚发送的最新内容】
 ${aiContext}
 
-任务：紧密结合“之前的聊天记录”和“最新发送的内容”，快速生成20条极具“活人感”的粉丝回复。
+任务：紧密结合上下文和最新内容，快速生成20条极具“活人感”的粉丝回复。
 语言比例：8条韩语，4条中文，2条日语，4条英语，2条其他语言。
-
-要求（绝对服从）：
-1. 【拒绝复读机】绝对不要重复爱豆说过的话！绝对不要一直提爱豆的兴趣爱好和习惯！要像正常人聊天一样给出自然的反应（如吐槽、关心、开玩笑、顺着话题延展）。
-2. 【多样化排版】20条回复的长度和风格必须差异巨大！有的只发一两个词（如“晕”、“疯了”），有的发一长串感叹，有的带标点，有的完全不带标点。
-3. 【克制使用Emoji】不要每句话都塞满Emoji，自然一点，有的句子完全不要Emoji。不要用奇怪的Emoji。
-4. 【活人感】模仿真实饭圈女孩/男孩的语气。情绪饱满，适度使用感叹号、波浪号(~)、哭泣(ㅠㅠ, 呜呜)、尖叫(啊啊啊)。大量使用饭圈黑话、缩写、网络流行语（如：晕、绝了、大发、대박、미쳤다、omg）。
-5. 【禁止提时间】绝对不要在回复中直接说出具体的时间数值，也不要像机器人一样机械地问候早安晚安。
-6. 必须严格只返回 JSON 数组格式，不要任何 Markdown 标记（不要写 \`\`\`json ），不要任何解释。内部字符串必须使用单引号或转义双引号，防止JSON解析失败！
-示例：["疯了吧ㅠㅠ", "怎么突然发这个", "大发...", "I can't believe this", "귀여워ㅠㅠㅠ", ...]`;
+要求（非常重要）：
+1. 反应真实自然：针对爱豆的话给出最直接、本能的反应（如吐槽、关心、花痴、玩梗偏多）。
+2. 长度参差不齐：有的微短，有的中等，有的稍长，打破机械感。
+3. 严格克制Emoji：每句话最多1-5个可爱的Emoji，甚至可以完全不用，拒绝满屏奇怪的Emoji。
+4. 绝对禁止鹦鹉学舌：绝不要重复或照抄爱豆说过的话！
+5. 绝对禁止报时：不要在回复中说出具体的几点几分，也不要机械地问早安晚安。
+6. 绝对不能重复 相似度超过60%的也不行
+7. 必须严格只返回 JSON 数组格式，不要任何 Markdown 标记（不要写 \`\`\`json ），不要任何解释。内部字符串必须使用单引号或转义双引号，防止JSON解析失败！
+示例：["疯了吧", "回复2", ...]`;
 
             const response = await fetchWithTimeout(`${baseUrl}/v1/chat/completions`, {
                 method: 'POST',
@@ -2417,8 +2495,6 @@ ${aiContext}
             } else {
                 alert("生成失败，请检查 API 配置或网络。\n错误信息: " + error.message);
             }
-            const btn = document.querySelector('.batch-generate-btn');
-            if (btn) btn.style.display = 'flex';
         } finally {
             hideLoading();
         }
@@ -2524,7 +2600,6 @@ ${aiContext}
     function openSettings() {
         document.getElementById('set-team').value = userData.persona.team || '';
         document.getElementById('set-realname').value = userData.persona.realName || '';
-        document.getElementById('set-gender').value = userData.persona.gender || '';
         document.getElementById('set-birthday').value = userData.persona.birthday || '';
         document.getElementById('set-mbti').value = userData.persona.mbti || '';
         document.getElementById('set-personality').value = userData.persona.personality || '';
@@ -2548,7 +2623,6 @@ ${aiContext}
     async function saveSettingsForm() {
         userData.persona.team = document.getElementById('set-team').value;
         userData.persona.realName = document.getElementById('set-realname').value;
-        userData.persona.gender = document.getElementById('set-gender').value;
         userData.persona.birthday = document.getElementById('set-birthday').value;
         userData.persona.mbti = document.getElementById('set-mbti').value;
         userData.persona.personality = document.getElementById('set-personality').value;
@@ -2592,7 +2666,7 @@ ${aiContext}
             } else { throw new Error("返回的数据格式不正确"); }
         } catch (error) {
             if (error.name === 'AbortError') {
-                alert("拉取超时，请检查网络或 API 地址。");
+                alert("拉取，请检查网络或 API 地址。");
             } else {
                 alert("拉取失败，请检查 URL、Key 或网络状况。\n错误信息: " + error.message);
             }
@@ -2618,6 +2692,186 @@ ${aiContext}
         img.onerror = () => splash.remove();
         img.src = 'https://image2url.com/r2/default/images/1774017840782-ff1c17d9-9ef7-43d3-adce-928339ce2b5f.jpeg';
         if (img.complete) img.onload();
+    }
+
+    // --- 附件菜单逻辑 ---
+    function openActionMenu() {
+        document.getElementById('action-menu').classList.add('show');
+    }
+    function closeActionMenu() {
+        document.getElementById('action-menu').classList.remove('show');
+    }
+
+    // --- 直播间逻辑 ---
+    let liveCommentQueue = [];
+    let liveCommentTimer = null;
+
+    function openLiveRoom() {
+        document.getElementById('live-room').classList.add('show');
+        applyLiveBg();
+        document.getElementById('live-comments-area').innerHTML = '';
+        liveCommentQueue = [];
+        
+        addLiveCommentSystem("直播已开启，粉丝正在赶来...");
+    }
+
+    function closeLiveRoom() {
+        document.getElementById('live-room').classList.remove('show');
+        clearInterval(liveCommentTimer);
+        liveCommentQueue = [];
+    }
+
+    function applyLiveBg() {
+        const liveRoom = document.getElementById('live-room');
+        if (userData.liveBg) {
+            liveRoom.style.backgroundImage = `url(${userData.liveBg})`;
+        } else {
+            liveRoom.style.backgroundImage = 'none';
+        }
+    }
+
+    async function handleLiveBgUpload(event) {
+        const file = event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+        
+        showLoading("正在设置直播背景...");
+        try {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > 1080) { h = h * (1080 / w); w = 1080; }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    userData.liveBg = canvas.toDataURL('image/jpeg', 0.8);
+                    await saveUserData();
+                    applyLiveBg();
+                    hideLoading();
+                };
+            };
+            reader.readAsDataURL(file);
+        } catch (e) {
+            alert("背景设置失败");
+            hideLoading();
+        }
+    }
+
+    function addLiveCommentSystem(text) {
+        const area = document.getElementById('live-comments-area');
+        const div = document.createElement('div');
+        div.className = 'live-comment system';
+        div.innerText = text;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function appendSingleLiveComment(text) {
+        const area = document.getElementById('live-comments-area');
+        const div = document.createElement('div');
+        div.className = 'live-comment';
+        
+        const randomId = 'fan_' + Math.random().toString(36).substr(2, 4);
+        div.innerHTML = `<div class="live-comment-user">${randomId}</div><div>${text}</div>`;
+        
+        area.appendChild(div);
+        
+        if (area.children.length > 30) {
+            area.removeChild(area.firstChild);
+        }
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function startLiveCommentFlow() {
+        if (liveCommentTimer) clearInterval(liveCommentTimer);
+        liveCommentTimer = setInterval(() => {
+            if (liveCommentQueue.length > 0) {
+                const comment = liveCommentQueue.shift();
+                appendSingleLiveComment(comment);
+            } else {
+                clearInterval(liveCommentTimer);
+            }
+        }, 800 + Math.random() * 1200); 
+    }
+
+    async function sendLiveMessage() {
+        const input = document.getElementById('live-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        addLiveCommentSystem(`[爱豆动作/发言]: ${text}`);
+        input.value = '';
+
+        const url = userData.api.url;
+        const key = userData.api.key;
+        const model = userData.api.model;
+
+        if (!url || !key || !model) {
+            addLiveCommentSystem("⚠️ 请先在 MORE 页面配置 API");
+            return;
+        }
+
+        const prompt = `你是一个扮演真实直播间观众的AI群控大脑。你的爱豆正在进行语音/视频直播。
+爱豆刚刚在直播中说/做了："${text}"
+
+任务：生成 20 条极具“活人感”的直播间实时弹幕/评论。
+要求：
+1. 极度简短：直播弹幕通常只有1-8个词。
+2. 语言混合：韩语为主，夹杂中文和英文。
+3. 内容多样化（非常重要）：
+   - 70% 是狂热粉丝的真实反应（啊啊啊、好可爱、疯了、心空）。
+   - 20% 是粉丝的提问（吃饭了吗？旁边是谁？今天开心吗？）。
+   - 10% 是Anti/黑粉的恶评或路人的迷惑发言（真无聊、别播了、长得好普、这人在干嘛、赶紧下播吧）。
+4. 必须严格只返回 JSON 数组格式，内部为字符串，不要任何 Markdown 标记，不要多余解释！
+示例：["啊啊啊啊", "귀여워ㅠㅠ", "omg", "밥 먹었어요?", "노잼", "미쳤다", "오늘 뭐했어요?", "빨리 꺼라"]`;
+
+        try {
+            const baseUrl = url.trim().replace(/\/+$/, '');
+            const response = await fetchWithTimeout(`${baseUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key.trim()}`
+                },
+                body: JSON.stringify({
+                    model: model.trim(),
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.9,
+                    max_tokens: 800
+                }),
+                timeout: 20000
+            });
+
+            if (!response.ok) throw new Error("API 请求失败");
+            const data = await response.json();
+            const content = data.choices?.[0]?.message?.content?.trim();
+            
+            let repliesArray = [];
+            try {
+                const match = content.match(/\[[\s\S]*\]/);
+                repliesArray = JSON.parse(match ? match[0] : content);
+            } catch (e) {
+                const fallbackMatch = content.match(/(["'])(?:(?=(\\?))\2.)*?\1/g);
+                if (fallbackMatch) {
+                    repliesArray = fallbackMatch.map(s => s.replace(/(^["']|["']$)/g, '').trim());
+                }
+            }
+
+            if (Array.isArray(repliesArray) && repliesArray.length > 0) {
+                liveCommentQueue.push(...repliesArray);
+                startLiveCommentFlow();
+            } else {
+                throw new Error("解析失败");
+            }
+
+        } catch (error) {
+            console.error(error);
+            addLiveCommentSystem("⚠️ 弹幕生成失败，请检查网络或API");
+        }
     }
 
     window.onload = async () => {
