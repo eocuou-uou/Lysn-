@@ -591,6 +591,36 @@
             border-radius: 12px;
         }
 
+        /* 直播记录气泡样式 */
+        .live-record-bubble {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            padding: 10px 18px !important;
+            border-radius: 24px !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 12px !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+        }
+        .live-phone-icon {
+            width: 28px;
+            height: 28px;
+            background-color: #f2f2f2;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .live-phone-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: #333;
+        }
+
         .batch-generate-btn {
             display: flex;
             justify-content: center;
@@ -1037,13 +1067,12 @@
         /* 直播间 UI */
         .live-room {
             position: absolute; top: 0; left: 0; width: 100%; 
-            height: 100vh; height: 100dvh; /* 修复底部白边，强制全屏 */
+            height: 100vh; height: 100dvh; 
             background-color: var(--theme-color);
             background-size: cover; background-position: center;
             z-index: 300; display: flex; flex-direction: column;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             
-            /* 动态颜色变量（会根据背景亮度自动切换） */
             --live-text-color: #ffffff;
             --live-text-muted: rgba(255, 255, 255, 0.7);
             --live-bubble-bg: rgba(0, 0, 0, 0.25);
@@ -1083,7 +1112,6 @@
         .live-comments-area {
             flex: 1; padding: 20px; display: flex; flex-direction: column;
             justify-content: flex-end; gap: 12px; z-index: 10;
-            /* 修复滑动问题 */
             overflow-y: auto; -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
             mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
@@ -1099,10 +1127,9 @@
         }
         .live-comment-user { font-weight: bold; color: var(--live-text-muted); font-size: 12px; white-space: nowrap; margin-top: 2px;}
         
-        /* 爱豆专属行动文本样式 */
         .live-comment.idol-action {
             background: var(--theme-color); 
-            color: #fff; /* 强制白色保证对比度 */
+            color: #fff; 
             font-weight: bold;
             border-left: 4px solid rgba(255,255,255,0.8);
             border-radius: 8px 16px 16px 8px;
@@ -1116,7 +1143,7 @@
 
         .live-input-container {
             padding: 10px 20px; 
-            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* 彻底修复底部白边 */
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
             background: var(--live-gradient); z-index: 10;
             display: flex; gap: 10px; align-items: center;
         }
@@ -1279,6 +1306,16 @@
                     <select id="set-model" style="width:100%; margin-top:15px; padding: 10px 0; border-bottom: 1px solid #f5f5f5;">
                         <option value="">请先拉取或手动输入</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- 新增：数据备份与导入 -->
+            <div class="settings-section">
+                <div class="settings-section-title">Data Backup (数据备份)</div>
+                <div class="settings-row" style="border-bottom: none; gap: 10px;">
+                    <button class="btn-pull" style="flex: 1; padding: 10px; font-size: 14px;" onclick="exportData()">导出备份</button>
+                    <button class="btn-pull" style="flex: 1; padding: 10px; font-size: 14px; background: var(--theme-color); color: #fff;" onclick="document.getElementById('import-upload').click()">导入备份</button>
+                    <input type="file" id="import-upload" accept=".json" style="display:none;" onchange="importData(event)">
                 </div>
             </div>
         </div>
@@ -2248,7 +2285,7 @@
                 baseText: combinedText,
                 hiddenDesc: combinedDesc,
                 hasSticker: hasSticker,
-                time: new Date().toISOString(), // 记录折叠气泡的时间，用于15分钟判定
+                time: new Date().toISOString(), 
                 replies: [] 
             });
         }
@@ -2266,7 +2303,7 @@
 
         userData.messages.forEach(msg => {
             if (msg.type === 'sent') {
-                if (!msg.hasGeneratedReplies) hasUnrepliedSentMsg = true;
+                if (!msg.hasGeneratedReplies && !msg.isLiveRecord) hasUnrepliedSentMsg = true;
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'message-wrapper';
@@ -2301,32 +2338,44 @@
                 }
 
                 const bubble = document.createElement('div');
-                bubble.className = 'message-right';
-                bubble.style.marginRight = '0'; 
                 
-                if (msg.mediaUrl) {
-                    if (msg.mediaType === 'video') {
-                        const video = document.createElement('video');
-                        video.src = msg.mediaUrl;
-                        video.controls = true;
-                        bubble.appendChild(video);
-                    } else {
-                        const img = document.createElement('img');
-                        img.src = msg.mediaUrl;
-                        bubble.appendChild(img);
+                if (msg.isLiveRecord) {
+                    // 直播记录特殊气泡样式
+                    bubble.className = 'live-record-bubble';
+                    bubble.innerHTML = `
+                        <div class="live-phone-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                        </div>
+                        <div>${msg.text}</div>
+                    `;
+                } else {
+                    bubble.className = 'message-right';
+                    bubble.style.marginRight = '0'; 
+                    
+                    if (msg.mediaUrl) {
+                        if (msg.mediaType === 'video') {
+                            const video = document.createElement('video');
+                            video.src = msg.mediaUrl;
+                            video.controls = true;
+                            bubble.appendChild(video);
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = msg.mediaUrl;
+                            bubble.appendChild(img);
+                        }
                     }
-                }
 
-                if (msg.stickerUrl) {
-                    const sticker = document.createElement('img');
-                    sticker.src = msg.stickerUrl;
-                    bubble.appendChild(sticker);
-                }
+                    if (msg.stickerUrl) {
+                        const sticker = document.createElement('img');
+                        sticker.src = msg.stickerUrl;
+                        bubble.appendChild(sticker);
+                    }
 
-                if (msg.text) {
-                    const originalText = document.createElement('div');
-                    originalText.innerText = msg.text;
-                    bubble.appendChild(originalText);
+                    if (msg.text) {
+                        const originalText = document.createElement('div');
+                        originalText.innerText = msg.text;
+                        bubble.appendChild(originalText);
+                    }
                 }
 
                 rightCol.appendChild(bubble);
@@ -2402,7 +2451,6 @@
         try {
             const baseUrl = url.trim().replace(/\/+$/, '');
             
-            // 精准实现 15 分钟记忆关联
             const bubbleIndex = userData.messages.findIndex(m => m.id === bubbleId);
             const bubbleTime = new Date(bubbleData.time || Date.now()).getTime();
             const fifteenMinsMs = 15 * 60 * 1000;
@@ -2657,6 +2705,53 @@ ${aiContext}
         closeSettings();
     }
 
+    // --- 数据导入导出逻辑 ---
+    function exportData() {
+        try {
+            let exportObj = { ...userData };
+            exportObj.customFont = null; 
+            
+            const dataStr = JSON.stringify(exportObj);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            const dateStr = new Date().toISOString().slice(0,10);
+            a.download = `Bubble_Backup_${dateStr}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert("导出失败：" + e.message);
+        }
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData && typeof importedData === 'object') {
+                    userData = { ...userData, ...importedData };
+                    await saveUserData();
+                    alert("导入成功！页面即将刷新...");
+                    location.reload(); 
+                } else {
+                    alert("文件格式不正确");
+                }
+            } catch (err) {
+                alert("导入失败，请检查文件是否损坏：" + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
     async function pullModels() {
         const urlInput = document.getElementById('set-apiurl').value.trim();
         const keyInput = document.getElementById('set-apikey').value.trim();
@@ -2729,8 +2824,8 @@ ${aiContext}
     // --- 直播间逻辑 ---
     let liveCommentQueue = [];
     let liveCommentTimer = null;
+    let liveStartTime = 0; // 记录直播开始时间
 
-    // 辅助函数：根据 Hex 计算亮度
     function getBrightnessFromHex(hex) {
         let r = 0, g = 0, b = 0;
         if (hex.length === 4) {
@@ -2745,7 +2840,6 @@ ${aiContext}
         return (r * 299 + g * 587 + b * 114) / 1000;
     }
 
-    // 辅助函数：根据图片计算平均亮度
     function getBrightnessFromImage(src, callback) {
         const img = new Image();
         img.crossOrigin = "Anonymous";
@@ -2765,17 +2859,16 @@ ${aiContext}
         img.src = src;
     }
 
-    // 更新直播间动态颜色（深色/浅色适配）
     function updateLiveRoomColors(brightness) {
         const liveRoom = document.getElementById('live-room');
-        if (brightness > 150) { // 背景偏浅，文字变深
+        if (brightness > 150) { 
             liveRoom.style.setProperty('--live-text-color', '#111111');
             liveRoom.style.setProperty('--live-text-muted', 'rgba(0, 0, 0, 0.6)');
             liveRoom.style.setProperty('--live-bubble-bg', 'rgba(255, 255, 255, 0.5)');
             liveRoom.style.setProperty('--live-input-bg', 'rgba(255, 255, 255, 0.6)');
             liveRoom.style.setProperty('--live-input-border', 'rgba(0, 0, 0, 0.15)');
             liveRoom.style.setProperty('--live-gradient', 'linear-gradient(to top, rgba(255,255,255,0.7), transparent)');
-        } else { // 背景偏深，文字变白
+        } else { 
             liveRoom.style.setProperty('--live-text-color', '#ffffff');
             liveRoom.style.setProperty('--live-text-muted', 'rgba(255, 255, 255, 0.7)');
             liveRoom.style.setProperty('--live-bubble-bg', 'rgba(0, 0, 0, 0.25)');
@@ -2791,6 +2884,9 @@ ${aiContext}
         document.getElementById('live-comments-area').innerHTML = '';
         liveCommentQueue = [];
         
+        liveStartTime = Date.now();
+        sendLiveRecordMessage("bubble LIVE"); // 发送开始气泡
+
         addLiveIdolAction("直播已开启，粉丝正在赶来...");
     }
 
@@ -2798,6 +2894,34 @@ ${aiContext}
         document.getElementById('live-room').classList.remove('show');
         clearInterval(liveCommentTimer);
         liveCommentQueue = [];
+
+        if (liveStartTime > 0) {
+            let durationMs = Date.now() - liveStartTime;
+            let totalSeconds = Math.floor(durationMs / 1000);
+            let hours = Math.floor(totalSeconds / 3600);
+            let minutes = Math.floor((totalSeconds % 3600) / 60);
+            let seconds = totalSeconds % 60;
+            let timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            sendLiveRecordMessage(timeStr); // 发送结束时长气泡
+            liveStartTime = 0;
+        }
+    }
+
+    // 专属的直播记录气泡发送函数
+    async function sendLiveRecordMessage(text) {
+        if (!userData.messages) userData.messages = [];
+        const newMessage = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
+            type: 'sent',
+            isLiveRecord: true,
+            text: text,
+            time: new Date().toISOString(),
+            hasGeneratedReplies: true // 直播记录不需要触发AI回复
+        };
+        userData.messages.push(newMessage);
+        await saveUserData();
+        renderMessages();
     }
 
     function applyLiveBg() {
@@ -2843,7 +2967,6 @@ ${aiContext}
         }
     }
 
-    // 发送爱豆的高亮行动文本
     function addLiveIdolAction(text) {
         const area = document.getElementById('live-comments-area');
         const div = document.createElement('div');
@@ -2898,7 +3021,6 @@ ${aiContext}
             return;
         }
 
-        // 引入人设信息，增强弹幕活感
         const prompt = `你是一个扮演真实直播间观众的AI群控大脑。你的爱豆正在进行语音/视频直播。
 【爱豆人设信息】
 团队：${userData.persona.team || '无'}
@@ -2910,8 +3032,8 @@ MBTI：${userData.persona.mbti || '无'}
 
 任务：生成 20 条极具“活人感”、有梗、符合饭圈文化的直播间实时弹幕。
 要求：
-1. 回复需要有梗 有意思 字数3~20字
-2. 语言混合：韩语(30%)，中文(20%)，英文(20%)，日语(20%)。
+1. 长度适中 有长有短 有梗 有意思
+2. 语言混合：韩语(30%)，中文(30%)，英文(20%)，其他语言(20%)
 3. 内容分布：
    - 60% 狂热粉丝反应（啊啊啊、疯了、救命、귀여워、미쳤다、slay、尊嘟假嘟）。
    - 20% 结合爱豆【人设信息】的玩梗或吐槽（比如提到TA的MBTI特质、习惯动作、或者团队梗）。
