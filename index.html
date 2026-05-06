@@ -8,9 +8,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Lysn idol ver.">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#ffffff">
+    
     <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Lysn idol ver.","short_name":"Lysn idol ver.","display":"standalone","start_url":".","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://cdn.phototourl.com/uploads/2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg","sizes":"512x512","type":"image/jpeg"}]}'>
+    <!-- 彻底修复 PWA 添加主屏幕失败的问题，使用符合规范的完整 URL 编码 -->
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Lysn%20idol%20ver.%22%2C%22short_name%22%3A%22Lysn%20idol%20ver.%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%23ffffff%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn.phototourl.com%2Fuploads%2F2026-03-22-14d0835b-2671-4247-8410-97bb0d6cae23.jpg%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%7D%5D%7D">
 
     <title>Lysn idol ver.</title>
     <style id="dynamic-font"></style>
@@ -594,7 +597,7 @@
             border-radius: 12px;
         }
 
-        /* 修复：直播记录气泡样式统一大小 */
+        /* 统一普通聊天室直播气泡的大小 */
         .live-record-bubble {
             background-color: var(--theme-color) !important;
             color: #ffffff !important;
@@ -1084,10 +1087,11 @@
             --live-input-border: rgba(255, 255, 255, 0.2);
             --live-gradient: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
             
-            /* 新增：专门给 Idol 气泡用的主题变色变量 */
-            --live-idol-bg: linear-gradient(150deg, rgba(255,255,255,0.2), rgba(255,255,255,0.08));
-            --live-idol-text-color: #FFE500;
-            --live-idol-border: rgba(255,255,255,0.18);
+            /* 新增：专门用于区分爱豆气泡的黑灰系高亮颜色变量 */
+            --live-idol-bg: rgba(255, 255, 255, 0.95);
+            --live-idol-text-color: #111111;
+            --live-idol-border: rgba(0, 0, 0, 0.1);
+            --live-idol-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
         .live-room.show { transform: translateY(0); }
         
@@ -1139,15 +1143,17 @@
         }
         .live-comment-user { font-weight: 700; color: var(--live-text-muted); font-size: 12px; letter-spacing: 0.02em; }
         
-        /* 修复：爱豆发送的气泡颜色动态变色 */
+        /* 修复：爱豆专属弹幕样式，黑灰系字体、白底高亮 */
         .live-comment.idol-action {
             background: var(--live-idol-bg);
             color: var(--live-idol-text-color);
             font-weight: 800;
             border: 1px solid var(--live-idol-border);
             border-radius: 22px;
-            box-shadow: 0 16px 45px rgba(0,0,0,0.12);
+            box-shadow: var(--live-idol-shadow);
             padding: 12px 16px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
         
         .live-idol-icon {
@@ -1586,8 +1592,18 @@
 </div>
 
 <script>
+    // --- API 智能拼接工具函数 ---
+    // 修复部分大模型请求 URL 带有重复的 /v1 导致请求直接瘫痪报错的问题。
+    function getApiUrl(base, endpoint) {
+        let url = base.trim().replace(/\/+$/, '');
+        if (url.endsWith('/v1') && endpoint.startsWith('/v1')) {
+            url = url.slice(0, -3); 
+        }
+        return url + endpoint;
+    }
+
     const fetchWithTimeout = async (resource, options = {}) => {
-        const { timeout = 30000 } = options;
+        const { timeout = 40000 } = options; // 放宽一点超时时间到40秒
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeout);
         const response = await fetch(resource, {
@@ -1711,8 +1727,8 @@
         }
 
         try {
-            const baseUrl = url.trim().replace(/\/+$/, '');
-            const response = await fetchWithTimeout(`${baseUrl}/v1/chat/completions`, {
+            const apiUrl = getApiUrl(url, '/v1/chat/completions');
+            const response = await fetchWithTimeout(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2179,7 +2195,7 @@
             renderStickerGrid(); 
         } else {
             pendingSticker = url;
-            document.getElementById('chat-input').placeholder = "[已选表情包] " + document.getElementById('chat-input').placeholder.replace(/\[已选表情包\] /g, '');
+            document.getElementById('chat-input').placeholder = "[已选表情包] " + document.getElementById('chat-input').placeholder.replace(/$$已选表情包$$ /g, '');
             checkInputState();
             closeStickerPanel();
         }
@@ -2278,7 +2294,7 @@
                     type: isVideo ? 'video' : 'image',
                     desc: desc.trim() || "一张照片/视频"
                 };
-                document.getElementById('chat-input').placeholder = "[已添加" + (isVideo ? "视频" : "照片") + "] " + document.getElementById('chat-input').placeholder.replace(/\[已添加.*?\] /g, '');
+                document.getElementById('chat-input').placeholder = "[已添加" + (isVideo ? "视频" : "照片") + "] " + document.getElementById('chat-input').placeholder.replace(/$$已添加.*?$$ /g, '');
                 checkInputState();
             };
             reader.readAsDataURL(file);
@@ -2551,7 +2567,7 @@ ${aiContext}
 3. 【克制使用Emoji】不要每句话都塞满Emoji，自然一点，有的句子完全不要Emoji。不要用奇怪的Emoji。
 4. 【活人感】模仿真实饭圈女孩/男孩的语气。情绪饱满，适度使用感叹号、波浪号(~)、哭泣(ㅠㅠ, 呜呜)、尖叫(啊啊啊)。大量使用饭圈黑话、缩写、网络流行语（如：晕、绝了、大发、대박、미쳤다、omg）。
 5. 【禁止提时间】绝对不要在回复中直接说出具体的时间数值，也不要像机器人一样机械地问候早安晚安。
-6. 必须严格只返回 JSON 数组格式，不要任何 Markdown 标记（不要写 \`\`\`json\`），不要任何解释。内部字符串必须使用单引号或转义双引号，防止JSON解析失败！
+6. 必须严格只返回 JSON 数组格式，绝对不要包含任何 Markdown 语法（不要写 \`\`\`json ），直接以 [ 开始，以 ] 结束。内部字符串必须使用单引号或转义双引号！
 示例：['疯了吧ㅠㅠ', '怎么突然发这个', '大发...', 'I can\\'t believe this', '귀여워ㅠㅠㅠ', ...]`;
     }
 
@@ -2572,7 +2588,7 @@ ${aiContext}
 4. 【活人感】模仿真实饭圈女孩/男孩的语气。情绪饱满，适度使用感叹号、波浪号(~)、哭泣(ㅠㅠ, 呜呜)、尖叫(啊啊啊)。大量使用饭圈黑话、缩写、网络流行语（如：晕、绝了、大发、대박、미쳤다、omg）。
 5. 【禁止提时间】绝对不要在回复中直接说出具体的时间数值，也不要像机器人一样机械地问候早安晚安。
 6. 对于非中文评论，必须在括号中提供中文翻译，例如：['안녕하세요 (你好)', 'Hello (你好)', 'こんにちは (你好)', ...]。中文评论不需要翻译。
-7. 必须严格只返回 JSON 数组格式，不要任何 Markdown 标记（不要写 \`\`\`json\`），不要任何解释。内部字符串必须使用单引号或转义双引号，防止JSON解析失败！
+7. 必须严格只返回 JSON 数组格式，绝对不要包含任何 Markdown 语法（不要写 \`\`\`json ），直接以 [ 开始，以 ] 结束。内部字符串必须使用单引号或转义双引号！
 示例：['啊啊啊啊救命', '귀여워ㅠㅠㅠ (好可爱)', 'omg (天哪)', '又在发疯了kkk', '노잼 (无聊)', '미쳤다 진짜 (真的疯了)', '今天也是ENFP爆发的一天', '빨리 꺼라 (快关掉)']`;
     }
 
@@ -2598,7 +2614,7 @@ ${aiContext}
         showLoading("粉丝正在疯狂回复中...");
 
         try {
-            const baseUrl = url.trim().replace(/\/+$/, '');
+            const apiUrl = getApiUrl(url, '/v1/chat/completions');
             
             const bubbleIndex = userData.messages.findIndex(m => m.id === bubbleId);
             const bubbleTime = new Date(bubbleData.time || Date.now()).getTime();
@@ -2631,7 +2647,7 @@ ${aiContext}
 
             const prompt = buildChatroomFanPrompt(historyStr, aiContext);
 
-            const response = await fetchWithTimeout(`${baseUrl}/v1/chat/completions`, {
+            const response = await fetchWithTimeout(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2656,24 +2672,25 @@ ${aiContext}
             if (!content) throw new Error("API 返回格式异常或为空");
             
             let repliesArray = [];
+            let cleanContent = content.replace(/```json/gi, '').replace(/```/g, '').trim();
             
             try {
-                const match = content.match(/\[[\s\S]*\]/);
-                repliesArray = JSON.parse(match ? match[0] : content);
+                const match = cleanContent.match(/$$[\s\S]*$$/);
+                repliesArray = JSON.parse(match ? match[0] : cleanContent);
             } catch (e) {
                 console.warn("JSON解析彻底失败，启动终极正则强制提取机制...");
-                const fallbackMatch = content.match(/(["'])(?:(?=(\\?))\2.)*?\1/g);
+                const fallbackMatch = cleanContent.match(/(["'])(?:(?=(\\?))\2.)*?\1/g);
                 if (fallbackMatch && fallbackMatch.length >= 5) {
                     repliesArray = fallbackMatch.map(s => s.replace(/(^["']|["']$)/g, '').trim()).filter(s => s.length > 0);
                 } else {
-                    repliesArray = content.split('\n')
+                    repliesArray = cleanContent.split('\n')
                         .map(line => line.replace(/^[-*0-9.\s]+/, '').trim()) 
                         .filter(line => line.length > 2 && !line.includes('```') && !line.includes('[') && !line.includes('{'));
                 }
             }
 
             if (!Array.isArray(repliesArray) || repliesArray.length === 0) {
-                repliesArray = content.split(/[.!?。！？\n]+/).map(s => s.trim()).filter(s => s.length > 2);
+                repliesArray = cleanContent.split(/[.!?。！？\n]+/).map(s => s.trim()).filter(s => s.length > 2);
                 if (repliesArray.length === 0) {
                     throw new Error("提取回复内容失败");
                 }
@@ -2784,7 +2801,7 @@ ${aiContext}
             quoteBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>';
             quoteBtn.onclick = () => {
                 pendingQuote = text;
-                document.getElementById('chat-input').placeholder = "[引用回复] " + document.getElementById('chat-input').placeholder.replace(/$$引用回复$$ /g, '');
+                document.getElementById('chat-input').placeholder = "[引用回复] " + document.getElementById('chat-input').placeholder.replace(/\[引用回复\] /g, '');
                 checkInputState();
                 closeRepliesPage();
                 document.getElementById('chat-input').focus();
@@ -2893,8 +2910,7 @@ ${aiContext}
         btn.innerText = "拉取中..."; btn.disabled = true;
 
         try {
-            const baseUrl = urlInput.endsWith('/') ? urlInput.slice(0, -1) : urlInput;
-            const fetchUrl = `${baseUrl}/v1/models`;
+            const fetchUrl = getApiUrl(urlInput, '/v1/models');
             const headers = { 'Content-Type': 'application/json' };
             if (keyInput) headers['Authorization'] = `Bearer ${keyInput}`;
 
@@ -2917,7 +2933,7 @@ ${aiContext}
             } else { throw new Error("返回的数据格式不正确"); }
         } catch (error) {
             if (error.name === 'AbortError') {
-                alert("拉取，请检查网络或 API 地址。");
+                alert("拉取超时，请检查网络或 API 地址。");
             } else {
                 alert("拉取失败，请检查 URL、Key 或网络状况。\n错误信息: " + error.message);
             }
@@ -2956,7 +2972,7 @@ ${aiContext}
     // --- 直播间逻辑 ---
     let liveCommentQueue = [];
     let liveCommentTimer = null;
-    let liveStartTime = 0; // 记录直播开始时间
+    let liveStartTime = 0; 
 
     function getBrightnessFromHex(hex) {
         let r = 0, g = 0, b = 0;
@@ -2991,7 +3007,6 @@ ${aiContext}
         img.src = src;
     }
 
-    // 修复：直播页面背景颜色更新逻辑，使得 Idol 气泡自适应环境色且异于粉丝色
     function updateLiveRoomColors(brightness) {
         const liveRoom = document.getElementById('live-room');
         if (brightness > 150) { 
@@ -3003,10 +3018,11 @@ ${aiContext}
             liveRoom.style.setProperty('--live-input-border', 'rgba(0, 0, 0, 0.15)');
             liveRoom.style.setProperty('--live-gradient', 'linear-gradient(to top, rgba(255,255,255,0.7), transparent)');
             
-            // 爱豆气泡 - 亮背景下高对比度的深粉红色与微灰的背景
-            liveRoom.style.setProperty('--live-idol-bg', 'linear-gradient(150deg, rgba(0,0,0,0.08), rgba(0,0,0,0.03))');
-            liveRoom.style.setProperty('--live-idol-text-color', '#D82E55'); 
-            liveRoom.style.setProperty('--live-idol-border', 'rgba(0,0,0,0.1)');
+            // 爱豆气泡样式 - 亮背景下高亮白底黑灰色系字体
+            liveRoom.style.setProperty('--live-idol-bg', 'rgba(255, 255, 255, 0.95)');
+            liveRoom.style.setProperty('--live-idol-text-color', '#111111'); 
+            liveRoom.style.setProperty('--live-idol-border', 'rgba(0,0,0,0.15)');
+            liveRoom.style.setProperty('--live-idol-shadow', '0 6px 20px rgba(0,0,0,0.2)');
         } else { 
             // 暗背景
             liveRoom.style.setProperty('--live-text-color', '#ffffff');
@@ -3016,10 +3032,11 @@ ${aiContext}
             liveRoom.style.setProperty('--live-input-border', 'rgba(255, 255, 255, 0.2)');
             liveRoom.style.setProperty('--live-gradient', 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)');
             
-            // 爱豆气泡 - 暗背景下高对比度的明黄色与微白的背景
-            liveRoom.style.setProperty('--live-idol-bg', 'linear-gradient(150deg, rgba(255,255,255,0.2), rgba(255,255,255,0.08))');
-            liveRoom.style.setProperty('--live-idol-text-color', '#FFE500'); 
-            liveRoom.style.setProperty('--live-idol-border', 'rgba(255,255,255,0.18)');
+            // 爱豆气泡样式 - 暗背景下高亮白底黑灰色系字体
+            liveRoom.style.setProperty('--live-idol-bg', 'rgba(255, 255, 255, 0.95)');
+            liveRoom.style.setProperty('--live-idol-text-color', '#222222'); 
+            liveRoom.style.setProperty('--live-idol-border', 'rgba(255,255,255,0.3)');
+            liveRoom.style.setProperty('--live-idol-shadow', '0 8px 25px rgba(0,0,0,0.4)');
         }
     }
 
@@ -3108,7 +3125,6 @@ ${aiContext}
         }
     }
 
-    // 专属的直播记录气泡发送函数
     async function sendLiveRecordMessage(text) {
         if (!userData.messages) userData.messages = [];
         const newMessage = {
@@ -3224,8 +3240,8 @@ ${aiContext}
         const prompt = buildLiveRoomPrompt(text);
 
         try {
-            const baseUrl = url.trim().replace(/\/+$/, '');
-            const response = await fetchWithTimeout(`${baseUrl}/v1/chat/completions`, {
+            const apiUrl = getApiUrl(url, '/v1/chat/completions');
+            const response = await fetchWithTimeout(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -3245,11 +3261,13 @@ ${aiContext}
             const content = data.choices?.[0]?.message?.content?.trim();
             
             let repliesArray = [];
+            let cleanContent = content.replace(/```json/gi, '').replace(/```/g, '').trim();
+
             try {
-                const match = content.match(/$$[\s\S]*$$/);
-                repliesArray = JSON.parse(match ? match[0] : content);
+                const match = cleanContent.match(/\[[\s\S]*\]/);
+                repliesArray = JSON.parse(match ? match[0] : cleanContent);
             } catch (e) {
-                const fallbackMatch = content.match(/(["'])(?:(?=(\\?))\2.)*?\1/g);
+                const fallbackMatch = cleanContent.match(/(["'])(?:(?=(\\?))\2.)*?\1/g);
                 if (fallbackMatch) {
                     repliesArray = fallbackMatch.map(s => s.replace(/(^["']|["']$)/g, '').trim());
                 }
